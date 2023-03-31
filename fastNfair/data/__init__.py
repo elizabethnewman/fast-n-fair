@@ -1,0 +1,1 @@
+from fastNfair.data.binary_classification import generate_binary_data

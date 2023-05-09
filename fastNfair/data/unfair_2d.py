@@ -1,5 +1,7 @@
 import torch
 import math
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 def generate_unfair_data(n_samples_per_class=100, p1=0.5, p2=0.5, push_unfair=0.05):

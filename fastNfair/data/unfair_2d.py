@@ -95,13 +95,13 @@ def visualize_unfair_data(x, y, s, net=None, show_orig=True, domain=(0, 1, 0, 1)
     # original line
     if show_orig or net is None:
         tt = -t.reshape(-1, 1) + 1
-        plt.plot(t, tt, 'k', linewidth=2, label='orig')
+        plt.plot(t, tt, 'k--', linewidth=4, label='orig')
 
     if net is not None:
         with torch.no_grad():
             tt2 = -(net[0].K[0] / net[0].K[1]) * t - (net[0].b / net[0].K[1])
 
-        plt.plot(t, tt2, 'r', linewidth=2, label='predictied')
+        plt.plot(t, tt2, 'k', linewidth=4, label='predictied')
 
     cmap = mpl.colors.ListedColormap(['tab:red', 'tab:blue'])
 

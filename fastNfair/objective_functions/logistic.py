@@ -4,8 +4,9 @@ from fastNfair.objective_functions import ObjectiveFunction
 
 class ObjectiveFunctionLogisticRegression(ObjectiveFunction):
 
-    def __init__(self, net):
+    def __init__(self, net, threshold=0.0):
         super(ObjectiveFunctionLogisticRegression, self).__init__(net)
+        self.threshold = threshold
 
     def forward(self, x, y, do_gradient=False, do_Hessian=False):
         n = x.shape[0]
@@ -13,7 +14,7 @@ class ObjectiveFunctionLogisticRegression(ObjectiveFunction):
         f, df, d2f = self.net(x, do_gradient=do_gradient, do_Hessian=do_Hessian)
 
         y = y.view(f.shape)
-        info = {'num_correct': torch.sum((f > 0.5) == (y > 0.5)).item()}
+        info = {'num_correct': torch.sum((f > self.threshold) == y).item()}
 
         beta = 1.0 / n
         p = torch.sigmoid(f)
@@ -45,7 +46,6 @@ class ObjectiveFunctionLogisticRegression(ObjectiveFunction):
                                        @ df.permute(0, 2, 1).unsqueeze(1))).permute(0, 2, 3, 1))
 
         return loss, dloss, d2loss, info
-
 
 
 if __name__ == '__main__':

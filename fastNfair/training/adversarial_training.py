@@ -77,16 +77,8 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
             loss, _, _, info = fctn(xb, yb)
         else:
             with torch.no_grad():
-                # opt = TrustRegionNewton(max_iter=5)
-                # delta = torch.randn_like(xb)
-                # delta /= delta.norm()
-                # # # delta *= 1e-8
-                # # # delta /= torch.norm(delta)  # TODO: don't want ||delta|| = 1 for classification
-                # fctn_perturb = ObjectiveFunctionPerturbation(fctn, xb, yb)
-                # # delta, info = opt.solve(fctn_perturb, delta, verbose=True, log_interval=1)
                 opt = TrustRegionSubproblem(max_iter=100, per_sample=True)
                 fctn_max = ObjectiveFunctionMaximize(fctn, yb)
-                # delta, _ = opt.solve(fctn_perturb, delta, radius)
                 xt, info = opt.solve(fctn_max, xb, radius)
 
             optimizer.zero_grad()
@@ -96,11 +88,7 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
         if regularizer is not None:
             reg = regularizer(fctn, xb, yb, sb)[0]
             loss = loss + reg
-            # sb = s[idxb]
-            # reg0 = fctn(xb[sb == 0], yb[sb == 0])[0]
-            # reg1 = fctn(xb[sb == 1], yb[sb == 1])[0]
-            # alpha = 1e2
-            # loss = loss + alpha * (0.5 * (reg0 - reg1) ** 2)
+
         # update network weights
         loss.backward()
         optimizer.step()

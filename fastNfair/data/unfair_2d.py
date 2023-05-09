@@ -90,7 +90,7 @@ def visualize_unfair_data(x, y, s, net=None, show_orig=True, domain=(0, 1, 0, 1)
     plt.contourf(x_grid, y_grid, c_grid.reshape(x_grid.shape), alpha=0.25, cmap=cmap)
 
     # create classifiers
-    t = torch.linspace(0, 1, 100)
+    t = torch.linspace(domain[0], domain[1], 100)
 
     # original line
     if show_orig or net is None:

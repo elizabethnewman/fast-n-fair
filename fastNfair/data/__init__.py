@@ -1,1 +1,2 @@
-from fastNfair.data.binary_classification import generate_binary_data
+from fastNfair.data.unfair_2d import generate_unfair_data, visualize_unfair_data
+from fastNfair.data.color_mnist import gray_to_color, generate_mnist, generate_color_mnist_binary, visualize_color_mnist

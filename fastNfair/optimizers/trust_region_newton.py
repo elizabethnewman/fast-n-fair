@@ -1,7 +1,6 @@
-import torch.nn as nn
-import numpy as np
-from fastNfair.linesearch import ConstantLineSearch, ArmijoLineSearch
+import torch
 from copy import deepcopy
+from fastNfair.optimizers import TrustRegionSubproblem
 
 
 class TrustRegionNewton:
@@ -34,6 +33,7 @@ class TrustRegionNewton:
         self.wdown = wdown
         self.wup = wup
         self.C = C
+        self.sub_opt = TrustRegionSubproblem(per_sample=False)
 
         self.headers = ('iter', 'f', '|x-x_old|', '|df|', '|df|/|df0|', '|s|', 'delta', 'flagTR', 'ared / pred')
         self.frmt = ('{:<15d}{:<15.2e}{:<15.2e}{:<15.2e}{:<15.2e}{:<15.2e}{:<15.2e}{:<15d}{:<15.2e}')
@@ -41,7 +41,7 @@ class TrustRegionNewton:
     def solve(self, fctn, x, verbose=False, log_interval=1):
 
         # initial evaluation
-        f, df_dx, d2f_dx2 = fctn(x, do_gradient=True, do_Hessian=True)
+        f, df_dx, d2f_dx2 = fctn(x, do_gradient=True, do_Hessian=True)[:3]
         df_dx_nrm0 = torch.norm(df_dx)
 
         info = {'headers': self.headers,
@@ -58,15 +58,20 @@ class TrustRegionNewton:
         while i < self.max_iter:
 
             # compute search direction
-            xt, infoTR = self.solve_trust_region_subproblem(fctn, x)
+            xt, infoTR = self.sub_opt.solve(fctn, x, self.delta)
+            self.delta = infoTR['delta']
+
             x, infoTRupdate = self.trupdate(x, xt, fctn)
 
             # re-evaluate
-            f, df_dx, d2f_dx2 = fctn(x, do_gradient=True, do_Hessian=True)
+            f, df_dx, d2f_dx2 = fctn(x, do_gradient=True, do_Hessian=True)[:3]
             df_dx_nrm = torch.norm(df_dx)
 
             # store progress
-            info['values'].append([i, f.item(), 0.0, df_dx_nrm.item(), (df_dx_nrm / df_dx_nrm0).item()] + [torch.norm(infoTR['s']).item(), self.delta, infoTRupdate['flag'], infoTRupdate['rho']])
+            info['values'].append([i, f.item(), 0.0, df_dx_nrm.item(),
+                                   (df_dx_nrm / df_dx_nrm0).item()] + [torch.norm(infoTR['s']).item(),
+                                                                       self.delta, infoTRupdate['flag'],
+                                                                       infoTRupdate['rho']])
             info['x'] = torch.cat((info['x'], torch.clone(x.reshape(1, -1).detach())), dim=0)
             info['df'] = torch.cat((info['df'], torch.clone(df_dx.reshape(1, -1).detach())), dim=0)
 
@@ -74,72 +79,17 @@ class TrustRegionNewton:
                 print(self.frmt.format(*info['values'][-1]))
 
             if self.stopping_criteria(df_dx_nrm, df_dx_nrm0):
-                print('stopping criteria satisfied!')
+                # print('stopping criteria satisfied!')
                 break
 
             i += 1
 
         return x, info
 
-    def solve_trust_region_subproblem(self, fctn, x):
-        # let's use bisection method for now
-        fc, dfc, d2fc = fctn(x, do_gradient=True, do_Hessian=True)
-
-        s = torch.linalg.solve(d2fc.permute(0, 3, 1, 2), -dfc.permute(0, 2, 1))
-        s = s.permute(0, 2, 1)
-
-        if self.delta is None or self.delta == 0:
-            self.delta = torch.norm(s)
-
-        if torch.norm(s) > self.delta:
-            # use bisection method
-            d, v = torch.linalg.eig(d2fc.squeeze(-1))
-            d, v = torch.real(d), torch.real(v)
-
-            y = -v.transpose(-1, -2) @ dfc
-            g = lambda alpha: torch.norm(y / (d.unsqueeze(-1) + alpha)) ** 2 - self.delta ** 2
-            alpha = self.bisection_method(g, 0, 1)
-            s = v @ (y / (d.unsqueeze(-1) + alpha))
-
-        # trial point
-        xt = x + s.squeeze(-1)
-        info = {'s': s}
-        return xt, info
-
-    def bisection_method(self, g, a, b, tol=1e-8, max_iter=20):
-        ga, gb, x = g(a), g(b), deepcopy(a)
-
-        if torch.sign(ga) != 0 and torch.sign(gb) != 0:
-            for n in range(max_iter):
-                c = (a + b) / 2.0
-                x = deepcopy(c)
-                gc = g(c)
-
-                if torch.sign(gc) == 0:
-                    x = deepcopy(c)
-                    break
-
-                if torch.sign(ga) != torch.sign(gc):
-                    b = deepcopy(c)
-                    gb = deepcopy(gc)
-                else:
-                    a = deepcopy(c)
-                    ga = deepcopy(gc)
-
-                if abs(b - a) <= tol * max(abs(a), abs(b)):
-                    break
-        else:
-            if torch.sign(ga) == 0:
-                x = deepcopy(a)
-            else:
-                x = deepcopy(b)
-
-        return x
-
     def trupdate(self, xc, xt, fctn):
 
         flag = 0
-        fc, dfc, d2fc = fctn(xc, do_gradient=True, do_Hessian=True)
+        fc, dfc, d2fc = fctn(xc, do_gradient=True, do_Hessian=True)[:3]
         ft = fctn(xt)[0]
 
         # step (xt = xc + s)
@@ -150,21 +100,25 @@ class TrustRegionNewton:
         ared = fc - ft
 
         # predicted reduction
-        pred = -torch.sum(dfc * st).squeeze() - 0.5 * (st.transpose(-1, -2) @ (d2fc.squeeze(-1) @ st)).squeeze()
+        # pred = -torch.sum(dfc * st).squeeze() - 0.5 * (st.transpose(-1, -2) @ (d2fc.squeeze(-1) @ st)).squeeze()
+        # pred = pred.mean()  # TODO: check this
+        # pred2 = -torch.dot(dfc.view(-1), st.view(-1)) - 0.5 * (st.transpose(-1, -2) @ (d2fc.squeeze(-1) @ st)).squeeze()
+        pred = -(dfc * st).sum() - 0.5 * (st.transpose(-1, -2) @ (d2fc.squeeze(-1) @ st)).sum()
 
         # ratio of actual to predicted
         rho = ared / pred
 
         if rho < 0.25:
             self.delta *= 0.25
-            flag = 1
+            flag = -1
         else:
             if rho > 0.75 and (torch.norm(st) - self.delta) / self.delta < 1e-5:
                 self.delta = min(2 * self.delta, self.delta_max)
                 flag = 2
 
         if rho > self.eta:
-            z = xc + st.squeeze(-1)
+            # z = xc + st.squeeze(-1)
+            z = xt
             flag = 3
         else:
             z = xc
@@ -192,21 +146,6 @@ if __name__ == "__main__":
 
     torch.manual_seed(123)
     torch.set_default_dtype(torch.float64)
-
-    # setup quadratic problem 0.5 * x.T @ A @ x + b.T @ x
-    # m, n = 3, 2
-    # A = torch.cat((torch.randn(m, n), torch.eye(n)), dim=0)
-    # AtA = A.T @ A
-    # b = 0 * torch.randn(n, 1)
-    #
-    # # solution
-    # x_true = torch.linalg.solve(AtA, -b)
-
-    # def fctn(x, **kwargs):
-    #     f = 0.5 * torch.sum(x.reshape(-1, 2) * (x.reshape(-1, 2) @ AtA), dim=1) + (x.reshape(-1, 2) @ b.reshape(2, -1)).squeeze()
-    #     df = x.reshape(-1, 2) @ AtA + b.reshape(-1, 2)
-    #     d2f = AtA
-    #     return f, df, d2f
 
     def fctn(x, **kwargs):
         f = 10 * (x[:, 1] - x[:, 0] ** 2) ** 2 + (1 - x[:, 0]) ** 2
@@ -247,5 +186,3 @@ if __name__ == "__main__":
     plt.plot(info['x'][:, 0], info['x'][:, 1], 'k-o', markersize=8)
     plt.colorbar()
     plt.show()
-
-

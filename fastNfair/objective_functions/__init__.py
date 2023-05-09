@@ -1,0 +1,5 @@
+from fastNfair.objective_functions.objective_function import ObjectiveFunction
+from fastNfair.objective_functions.mse import ObjectiveFunctionMSE
+from fastNfair.objective_functions.logistic import ObjectiveFunctionLogisticRegression
+from fastNfair.objective_functions.cross_entropy import ObjectiveFunctionCrossEntropy
+

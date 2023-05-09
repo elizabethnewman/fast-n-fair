@@ -1,0 +1,5 @@
+from fastNfair.regularizers.regularizer import Regularizer
+from fastNfair.regularizers.tikhonov import RegularizerTikhonov
+from fastNfair.regularizers.invariant_risk import RegularizerInvariantRisk
+from fastNfair.regularizers.separation import RegularizerSeparation
+

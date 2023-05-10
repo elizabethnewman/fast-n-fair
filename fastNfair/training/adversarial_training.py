@@ -84,7 +84,6 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
 
 
 def test(fctn, x, y):
-    # TODO: fix hessQuik to include this eval option
     fctn.eval()
 
     with torch.no_grad():

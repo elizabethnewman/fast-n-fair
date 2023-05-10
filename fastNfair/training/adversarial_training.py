@@ -1,25 +1,6 @@
 import torch
+from copy import deepcopy
 from fastNfair.optimizers import TrustRegionNewton, TrustRegionSubproblem
-
-
-class ObjectiveFunctionPerturbation(torch.nn.Module):
-    def __init__(self, fctn, x, y):
-        super(ObjectiveFunctionPerturbation, self).__init__()
-        self.fctn = fctn
-        self.x = x
-        self.y = y
-
-    def forward(self, delta, do_gradient=False, do_Hessian=False):
-
-        f, df, d2f, *_ = self.fctn(self.x + delta.view_as(self.x), self.y, do_gradient=do_gradient, do_Hessian=do_Hessian)
-
-        # negate so we maximize
-        f *= -1.0
-        if df is not None:
-            df *= -1.0
-        if d2f is not None:
-            d2f *= -1.0
-        return f, df, d2f
 
 
 class ObjectiveFunctionMaximize(torch.nn.Module):

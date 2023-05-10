@@ -1,4 +1,5 @@
 import torch
+from sklearn import metrics
 
 
 def confusion_matrix(true_labels, pred_labels, pos_label=1):
@@ -122,6 +123,18 @@ def fairness_metrics(y_true, y_pred, s):
            'sufficiency': out_suf
            }
     return out
+
+
+def store_statistics(z, y_pred, x, y):
+    out = compute_statistics(y, y_pred)
+    cm = metrics.confusion_matrix(y, y_pred)
+    fpr, tpr, _ = metrics.roc_curve(y, z.detach(), pos_label=1)
+    auc = metrics.auc(fpr, tpr)
+
+    return {'stats': out, 'cm': cm, 'fpr': fpr, 'tpr': tpr, 'auc': auc}
+
+
+
 
 
 

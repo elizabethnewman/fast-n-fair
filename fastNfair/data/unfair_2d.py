@@ -101,7 +101,7 @@ def visualize_unfair_data(x, y, s, net=None, show_orig=True, domain=(0, 1, 0, 1)
         with torch.no_grad():
             tt2 = -(net[0].K[0] / net[0].K[1]) * t - (net[0].b / net[0].K[1])
 
-        plt.plot(t, tt2, 'k', linewidth=4, label='predictied')
+        plt.plot(t, tt2, 'k', linewidth=4, label='predicted')
 
     cmap = mpl.colors.ListedColormap(['tab:red', 'tab:blue'])
 

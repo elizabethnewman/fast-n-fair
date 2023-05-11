@@ -48,6 +48,7 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
     # shuffle
     idx = torch.randperm(n)
 
+    count = 0
     for i in range(n_batch):
         idxb = idx[i * b:(i + 1) * b]
         xb, yb, sb = x[idxb], y[idxb], s[idxb]
@@ -77,8 +78,9 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
         # store results
         running_loss += b * loss.item()
         running_acc += info['num_correct']
+        count += b
 
-    output = (running_loss / n, 100 * running_acc / n)
+    output = (running_loss / n, 100 * running_acc / count)
 
     return output
 

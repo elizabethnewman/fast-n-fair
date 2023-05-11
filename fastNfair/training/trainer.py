@@ -33,7 +33,7 @@ class TrainerSGD:
         results['train']['accuracy'].append(acc_train)
         results['val']['loss'].append(loss_val)
         results['val']['accuracy'].append(acc_val)
-        results['theta'].append(deepcopy(fctn.net.state_dict()))
+        # results['theta'].append(deepcopy(fctn.net.state_dict()))
 
         if verbose:
             print((8 * '{:<15s}').format('epoch', 'lr', 'running', ' ', 'train', ' ', 'val', ' '))
@@ -56,7 +56,7 @@ class TrainerSGD:
             results['train']['accuracy'].append(acc_train)
             results['val']['loss'].append(loss_val)
             results['val']['accuracy'].append(acc_val)
-            results['theta'].append(deepcopy(fctn.net.state_dict()))
+            # results['theta'].append(deepcopy(fctn.net.state_dict()))
 
             if verbose:
                 print(print_frmt.format(i, self.optimizer.state_dict()['param_groups'][0]['lr'],

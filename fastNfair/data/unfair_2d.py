@@ -4,7 +4,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
-def generate_unfair_data(n_samples_per_class=100, p1=0.5, p2=0.5, push_unfair=0.05, v=(1.0, 1.0),
+def generate_unfair_data(n_samples_per_class=100, p1=0.5, p2=0.5, alpha=0.05, u=(1.0, 1.0),
                          classifier=lambda z: -z[:, 0] - z[:, 1] + 1):
     # p1: percent of label = 0 (not hired) in group A
     # p2: percent of label = 1 (hired) in group A
@@ -48,10 +48,10 @@ def generate_unfair_data(n_samples_per_class=100, p1=0.5, p2=0.5, push_unfair=0.
 
     # shift the data to create overlapping
     # group A (s == 0) more likely not to be hired
-    x[(s == 0) * (y == 1)] -= push_unfair * torch.tensor(v)
+    x[(s == 0) * (y == 1)] -= alpha * torch.tensor(u)
 
     # group B (s == 1) more likely to be hired
-    x[(s == 1) * (y == 0)] += push_unfair * torch.tensor(v)
+    x[(s == 1) * (y == 0)] += alpha * torch.tensor(u)
 
     # shuffle
     idx = torch.randperm(x.shape[0])

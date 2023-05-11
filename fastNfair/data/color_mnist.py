@@ -35,8 +35,8 @@ def gray_to_color(x, y, colors, p):
     # create false colors via weighting
     unique_color_labels = torch.unique(color_labels)
     for label in unique_color_labels:
-        x_color[color_labels == label] = x_color[color_labels == label] * torch.tensor(colors[label]).reshape(1, -1, 1,
-                                                                                                              1)
+        x_color[color_labels == label] = (x_color[color_labels == label]
+                                          * torch.tensor(colors[label]).reshape(1, -1, 1, 1))
 
     return x_color, color_labels
 

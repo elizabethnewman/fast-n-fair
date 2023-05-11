@@ -36,7 +36,7 @@ def predict_labels(out):
     return out.argmax(dim=-1)
 
 
-def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=2e-1):
+def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
     fctn.train()
     n = x.shape[0]
     b = batch_size
@@ -51,7 +51,7 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
     count = 0
     for i in range(n_batch):
         idxb = idx[i * b:(i + 1) * b]
-        xb, yb, sb = x[idxb], y[idxb], s[idxb]
+        xb, yb, sb = x[idxb].to(device), y[idxb].to(device), s[idxb].to(device)
 
         # find perturbation
         if not robust or radius < 1e-10:

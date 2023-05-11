@@ -5,13 +5,14 @@ from fastNfair.training import train_one_epoch, test
 
 class TrainerSGD:
 
-    def __init__(self, optimizer, scheduler=None, regularier=None, batch_size=5, max_epochs=10):
+    def __init__(self, optimizer, scheduler=None, regularier=None, batch_size=5, max_epochs=10, device='cpu'):
 
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.regularizer = regularier
         self.batch_size = batch_size
         self.max_epochs = max_epochs
+        self.device = device
 
     def train(self, fctn, data_train, data_val, data_test, robust=False, radius=2e-1, verbose=False):
         results = {'train': {'loss': [], 'accuracy': []},
@@ -25,8 +26,8 @@ class TrainerSGD:
         x_test, y_test, s_test = data_test
 
         # initial evaluation
-        loss_train, acc_train = test(fctn, x_train, y_train)
-        loss_val, acc_val = test(fctn, x_val, y_val)
+        loss_train, acc_train = test(fctn, x_train.to(self.device), y_train.to(self.device))
+        loss_val, acc_val = test(fctn, x_val.to(self.device), y_val.to(self.device))
 
         # store results
         results['train']['loss'].append(loss_train)
@@ -46,7 +47,7 @@ class TrainerSGD:
             loss_running, acc_running = train_one_epoch(fctn, self.optimizer, x_train, y_train, s_train,
                                                         batch_size=self.batch_size,
                                                         robust=robust, radius=radius,
-                                                        regularizer=self.regularizer)
+                                                        regularizer=self.regularizer, device=self.device)
 
             loss_train, acc_train = test(fctn, x_train, y_train)
             loss_val, acc_val = test(fctn, x_val, y_val)

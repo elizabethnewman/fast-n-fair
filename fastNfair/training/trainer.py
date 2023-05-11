@@ -26,8 +26,8 @@ class TrainerSGD:
         x_test, y_test, s_test = data_test
 
         # initial evaluation
-        loss_train, acc_train = test(fctn, x_train.to(self.device), y_train.to(self.device))
-        loss_val, acc_val = test(fctn, x_val.to(self.device), y_val.to(self.device))
+        loss_train, acc_train = test(fctn, x_train, y_train)
+        loss_val, acc_val = test(fctn, x_val, y_val)
 
         # store results
         results['train']['loss'].append(loss_train)
@@ -51,8 +51,8 @@ class TrainerSGD:
                                                         robust=robust, radius=radius,
                                                         regularizer=self.regularizer, device=self.device)
 
-            loss_train, acc_train = test(fctn, x_train.to(self.device), y_train.to(self.device))
-            loss_val, acc_val = test(fctn, x_val.to(self.device), y_val.to(self.device))
+            loss_train, acc_train = test(fctn, x_train, y_train)
+            loss_val, acc_val = test(fctn, x_val, y_val)
 
             # store results
             results['train']['loss'].append(loss_train)
@@ -69,7 +69,7 @@ class TrainerSGD:
                 self.scheduler.step()
 
         # final evaluation
-        loss_test, acc_test = test(fctn, x_test.to(self.device), y_test.to(self.device))
+        loss_test, acc_test = test(fctn, x_test, y_test)
         results['test']['loss'] = loss_test
         results['test']['accuracy'] = acc_test
 

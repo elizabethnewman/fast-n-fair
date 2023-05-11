@@ -108,7 +108,7 @@ if __name__ == '__main__':
     import fastNfair.utils.statistics as stats
     torch.manual_seed(42)
 
-    x, y, s = generate_unfair_data(p1=0.75, p2=0.25, push_unfair=0.1, v=(1.0, 3.0))
+    x, y, s = generate_unfair_data(p1=0.75, p2=0.25, alpha=0.1, u=(1.0, 3.0))
 
 
     visualize_unfair_data((x, y, s))

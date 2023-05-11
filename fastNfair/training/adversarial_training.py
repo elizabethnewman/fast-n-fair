@@ -85,12 +85,12 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
     return output
 
 
-def test(fctn, x, y):
+def test(fctn, x, y, device='cpu'):
     fctn.eval()
 
     with torch.no_grad():
         n = x.shape[0]
-        loss, _, _, info = fctn(x, y)
+        loss, _, _, info = fctn(x.to(device), y.to(device))
 
     return loss.item(), 100 * info['num_correct'] / n
 

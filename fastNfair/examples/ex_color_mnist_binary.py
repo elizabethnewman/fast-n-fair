@@ -7,6 +7,8 @@ from fastNfair.training import TrainerSGD, Evaluator
 import hessQuik.activations as act
 import hessQuik.layers as lay
 import hessQuik.networks as net
+import time
+
 
 import argparse
 # argument parser
@@ -96,9 +98,11 @@ trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size=args.batch,
                      regularier=RegularizerInvariantRisk(alpha=1e1))
 
 # train!
+t0 = time.perf_counter()
 results_train = trainer.train(fctn, (x_train.view(x_train.shape[0], -1), y_train, s_train), (x_val.view(x_val.shape[0], -1), y_val, s_val), (x_test.view(x_test.shape[0], -1), y_test, s_test),
                               verbose=args.verbose, robust=args.robust, radius=args.radius)
-
+t1 = time.perf_counter()
+results_train['total_time'] = t1 - t0
 
 #%% compute metrics
 evaluator = Evaluator()

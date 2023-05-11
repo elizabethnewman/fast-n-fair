@@ -1,6 +1,7 @@
 import torch
 from copy import deepcopy
 from fastNfair.training import train_one_epoch, test
+import time
 
 
 class TrainerSGD:
@@ -37,19 +38,21 @@ class TrainerSGD:
         # results['theta'].append(deepcopy(fctn.net.state_dict()))
 
         if verbose:
-            print((8 * '{:<15s}').format(' ', ' ', 'running', ' ', 'train', ' ', 'val', ' '))
-            print((8 * '{:<15s}').format('epoch', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc'))
+            print((8 * '{:<15s}').format(' ', ' ', ' ',  'running', ' ', 'train', ' ', 'val', ' '))
+            print((8 * '{:<15s}').format('epoch', 'time', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc'))
 
-            print_frmt = '{:<15d}{:<15.4e}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}'
-            print(print_frmt.format(-1, self.optimizer.state_dict()['param_groups'][0]['lr'],
+            print_frmt = '{:<15d}{:<15.4f}{:<15.4e}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}'
+            print(print_frmt.format(-1, 0.0, self.optimizer.state_dict()['param_groups'][0]['lr'],
                                     0.0, 0.0, loss_train, acc_train, loss_val, acc_val))
 
         # main iteration
         for i in range(self.max_epochs):
+            t0 = time.perf_counter()
             loss_running, acc_running = train_one_epoch(fctn, self.optimizer, x_train, y_train, s_train,
                                                         batch_size=self.batch_size,
                                                         robust=robust, radius=radius,
                                                         regularizer=self.regularizer, device=self.device)
+            t1 = time.perf_counter()
 
             loss_train, acc_train = test(fctn, x_train, y_train, device=self.device)
             loss_val, acc_val = test(fctn, x_val, y_val, device=self.device)
@@ -62,7 +65,7 @@ class TrainerSGD:
             # results['theta'].append(deepcopy(fctn.net.state_dict()))
 
             if verbose:
-                print(print_frmt.format(i, self.optimizer.state_dict()['param_groups'][0]['lr'],
+                print(print_frmt.format(i, t1 - t0, self.optimizer.state_dict()['param_groups'][0]['lr'],
                                         loss_running, acc_running, loss_train, acc_train, loss_val, acc_val))
 
             if self.scheduler is not None:

@@ -37,7 +37,9 @@ class TrainerSGD:
         # results['theta'].append(deepcopy(fctn.net.state_dict()))
 
         if verbose:
-            print((8 * '{:<15s}').format('epoch', 'lr', 'running', ' ', 'train', ' ', 'val', ' '))
+            print((8 * '{:<15s}').format(' ', ' ', 'running', ' ', 'train', ' ', 'val', ' '))
+            print((8 * '{:<15s}').format('epoch', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc'))
+
             print_frmt = '{:<15d}{:<15.4e}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}'
             print(print_frmt.format(-1, self.optimizer.state_dict()['param_groups'][0]['lr'],
                                     0.0, 0.0, loss_train, acc_train, loss_val, acc_val))
@@ -49,8 +51,8 @@ class TrainerSGD:
                                                         robust=robust, radius=radius,
                                                         regularizer=self.regularizer, device=self.device)
 
-            loss_train, acc_train = test(fctn, x_train, y_train)
-            loss_val, acc_val = test(fctn, x_val, y_val)
+            loss_train, acc_train = test(fctn, x_train.to(self.device), y_train.to(self.device))
+            loss_val, acc_val = test(fctn, x_val.to(self.device), y_val.to(self.device))
 
             # store results
             results['train']['loss'].append(loss_train)
@@ -67,7 +69,7 @@ class TrainerSGD:
                 self.scheduler.step()
 
         # final evaluation
-        loss_test, acc_test = test(fctn, x_test, y_test)
+        loss_test, acc_test = test(fctn, x_test.to(self.device), y_test.to(self.device))
         results['test']['loss'] = loss_test
         results['test']['accuracy'] = acc_test
 

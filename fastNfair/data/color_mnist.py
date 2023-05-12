@@ -115,7 +115,8 @@ def generate_color_mnist_binary(x, y, p=0.5):
     return x, labels, colors
 
 
-def visualize_color_mnist(x, y, c, n_rows=2):
+def visualize_color_mnist(data, n_rows=2):
+    x, y, c = data
     cmap = mpl.colormaps['cool']
     n_img = (x.shape[0] // n_rows) * n_rows
     for i in range(n_img):

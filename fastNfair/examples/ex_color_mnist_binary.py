@@ -26,9 +26,9 @@ parser.add_argument('--p_test', default=0.9, help='probability of color flipping
 
 parser.add_argument('--alpha', default=1e-1, help='unfair scale')
 parser.add_argument('--u', default=(1.0, 1.0), help='unfair direction')
-parser.add_argument('--n-train', default=5000, help='number of training points')
-parser.add_argument('--n-val', default=100, help='number of training points')
-parser.add_argument('--n-test', default=100, help='number of training points')
+parser.add_argument('--n-train', default=200, help='number of training points')
+parser.add_argument('--n-val', default=50, help='number of training points')
+parser.add_argument('--n-test', default=50, help='number of training points')
 
 # training
 parser.add_argument('--epochs', default=10)
@@ -72,7 +72,7 @@ x_test, y_test, s_test = generate_color_mnist_binary(x_t, y_t, args.p_test)
 
 if args.plot:
     n = 64
-    visualize_color_mnist(x_train[:n], y_train[:n], s_train[:n], n_rows=4)
+    visualize_color_mnist((x_train[:n], y_train[:n], s_train[:n]), n_rows=4)
     plt.show()
 
 #%% training
@@ -95,7 +95,7 @@ opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
 trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size=args.batch,
-                     regularier=RegularizerInvariantRisk(alpha=1e1))
+                     regularier=RegularizerInvariantRisk(alpha=0e0))
 
 # train!
 t0 = time.perf_counter()

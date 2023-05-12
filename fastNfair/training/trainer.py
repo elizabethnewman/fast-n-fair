@@ -38,8 +38,8 @@ class TrainerSGD:
         # results['theta'].append(deepcopy(fctn.net.state_dict()))
 
         if verbose:
-            print((8 * '{:<15s}').format(' ', ' ', ' ',  'running', ' ', 'train', ' ', 'val', ' '))
-            print((8 * '{:<15s}').format('epoch', 'time', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc'))
+            print((9 * '{:<15s}').format(' ', ' ', ' ',  'running', ' ', 'train', ' ', 'val', ' '))
+            print((9 * '{:<15s}').format('epoch', 'time', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc'))
 
             print_frmt = '{:<15d}{:<15.4f}{:<15.4e}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}'
             print(print_frmt.format(-1, 0.0, self.optimizer.state_dict()['param_groups'][0]['lr'],

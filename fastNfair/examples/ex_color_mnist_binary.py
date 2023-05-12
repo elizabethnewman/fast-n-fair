@@ -49,7 +49,7 @@ args.epochs = 10
 args.verbose = True
 args.robust = False
 args.plot = True
-args.alpha = 1e-2
+args.alpha = 0e0
 
 
 
@@ -66,10 +66,30 @@ n_train, n_val, n_test = args.n_train, args.n_val, args.n_test
 
 (x, y), (x_t, y_t) = generate_mnist(n_train=n_train + n_val, n_test=n_test)
 
-x_train, y_train, s_train = generate_color_mnist_binary(x[:n_train], y[:n_train], args.p_train)
-x_val, y_val, s_val = generate_color_mnist_binary(x[n_train:], y[n_train:], args.p_val)
-x_test, y_test, s_test = generate_color_mnist_binary(x_t, y_t, args.p_test)
+x_train, digit_train = x[:n_train], y[:n_train]
+x_val, digit_val = x[n_train:n_train + n_val], y[n_train:n_train + n_val]
+x_test, digit_test = x_t, y_t
 
+x_train, y_train, s_train = generate_color_mnist_binary(x_train, digit_train, args.p_train)
+x_val, y_val, s_val = generate_color_mnist_binary(x_val, digit_val, args.p_val)
+x_test, y_test, s_test = generate_color_mnist_binary(x_test, digit_test, args.p_test)
+
+
+# compute correlation between labels and digit
+corr_digit_train = (1.0 * (y_train == digit_train)).sum() / y_train.numel()
+corr_attr_train = (1.0 * (y_train == s_train)).sum() / y_train.numel()
+
+corr_digit_val = (1.0 * (y_val == digit_val)).sum() / y_val.numel()
+corr_attr_val = (1.0 * (y_val == s_val)).sum() / y_val.numel()
+
+corr_digit_test = (1.0 * (y_test == digit_test)).sum() / y_test.numel()
+corr_attr_test = (1.0 * (y_test == s_test)).sum() / y_test.numel()
+
+if args.verbose:
+    print('Correlation of labels and attributes with true digit')
+    print('TRAIN: digit: %0.4f\tattr: %0.4f' % (corr_digit_train, corr_attr_train))
+    print('VAL:   digit: %0.4f\tattr: %0.4f' % (corr_digit_val, corr_attr_val))
+    print('TEST:  digit: %0.4f\tattr: %0.4f' % (corr_digit_test, corr_attr_test))
 
 if args.plot:
     n = 64

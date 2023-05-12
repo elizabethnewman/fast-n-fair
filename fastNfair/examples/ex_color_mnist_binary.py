@@ -24,8 +24,7 @@ parser.add_argument('--p_train', default=0.2, help='probability of color flippin
 parser.add_argument('--p_val', default=0.1, help='probability of color flipping')
 parser.add_argument('--p_test', default=0.9, help='probability of color flipping')
 
-parser.add_argument('--alpha', default=1e-1, help='unfair scale')
-parser.add_argument('--u', default=(1.0, 1.0), help='unfair direction')
+parser.add_argument('--alpha', default=1e-1, help='regularization parameter')
 parser.add_argument('--n-train', default=200, help='number of training points')
 parser.add_argument('--n-val', default=50, help='number of training points')
 parser.add_argument('--n-test', default=50, help='number of training points')
@@ -48,8 +47,10 @@ args = parser.parse_args()
 
 args.epochs = 10
 args.verbose = True
-args.robust = True
+args.robust = False
 args.plot = True
+args.alpha = 1e-2
+
 
 
 
@@ -95,7 +96,7 @@ opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
 trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size=args.batch,
-                     regularier=RegularizerInvariantRisk(alpha=0e0))
+                     regularier=RegularizerInvariantRisk(alpha=args.alpha))
 
 # train!
 t0 = time.perf_counter()

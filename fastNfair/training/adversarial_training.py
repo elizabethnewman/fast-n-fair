@@ -1,6 +1,6 @@
 import torch
 from copy import deepcopy
-from fastNfair.optimizers import TrustRegionNewton, TrustRegionSubproblem
+from fastNfair.optimizers import TrustRegionSubproblem
 
 
 class ObjectiveFunctionMaximize(torch.nn.Module):

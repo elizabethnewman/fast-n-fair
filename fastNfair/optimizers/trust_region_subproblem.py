@@ -4,6 +4,7 @@ from copy import deepcopy
 
 
 class TrustRegionSubproblem:
+    # TODO: add documentation
 
     def __init__(self, max_iter=100, tol=1e-8, per_sample=False):
         self.opt = BisectionMethod(max_iter, tol)
@@ -47,7 +48,6 @@ class TrustRegionSubproblem:
             else:
                 # global way
                 if s.norm() > delta:
-                    # TODO: make more efficient
                     # solve the regularized problem for Lagrange multiplier
                     d, v = torch.linalg.eig(d2fc.squeeze(-1))
                     d, v = torch.real(d), torch.real(v)

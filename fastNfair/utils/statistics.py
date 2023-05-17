@@ -5,18 +5,19 @@ from sklearn import metrics
 def confusion_matrix(true_labels, pred_labels, pos_label=1):
     # returns
     #   (tp, fp, fn, tn)
+    # TODO: implement!
 
     # tp : true positives (# correctly labeled as blue)
-    tp = torch.sum(pred_labels[true_labels == pos_label] == pos_label)
+    tp = torch.ones(1)
 
     # tn : true negatives (# correctly labeled as red)
-    tn = torch.sum(pred_labels[true_labels != pos_label] != pos_label)
+    tn = torch.ones(1)
 
     # fp : false positives (# incorrectly labeled as blue)
-    fp = torch.sum(pred_labels[true_labels != pos_label] == pos_label)
+    fp = torch.ones(1)
 
     # fn : false negative (# incorrectly labeled as red)
-    fn = torch.sum(pred_labels[true_labels == pos_label] != pos_label)
+    fn = torch.ones(1)
 
     return tp, fp, fn, tn
 
@@ -74,41 +75,29 @@ def compute_statistics(true_labels, pred_labels, pos_label=1):
 
 
 def independence(y_true, y_pred, s):
-    ind_s0_y0 = (y_pred[s == 0] == 0).sum() / (s == 0).sum()
-    ind_s1_y0 = (y_pred[s == 1] == 0).sum() / (s == 1).sum()
+    # TODO: implement!
 
-    ind_s0_y1 = (y_pred[s == 0] == 1).sum() / (s == 0).sum()
-    ind_s1_y1 = (y_pred[s == 1] == 1).sum() / (s == 1).sum()
-
-    out = {'y = 0': {'s = 0': ind_s0_y0.item(), 's = 1': ind_s1_y0.item()},
-           'y = 1': {'s = 0': ind_s0_y1.item(), 's = 1': ind_s1_y1.item()}
+    out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
+           'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
 
     return out
 
 
 def separation(y_true, y_pred, s):
-    sep_s0_y0 = y_pred[(y_true == 0) * (s == 0)].sum() / ((y_true == 0) * (s == 0)).sum()
-    sep_s1_y0 = y_pred[(y_true == 0) * (s == 1)].sum() / ((y_true == 0) * (s == 1)).sum()
+    # TODO: implement!
 
-    sep_s0_y1 = y_pred[(y_true == 1) * (s == 0)].sum() / ((y_true == 1) * (s == 0)).sum()
-    sep_s1_y1 = y_pred[(y_true == 1) * (s == 1)].sum() / ((y_true == 1) * (s == 1)).sum()
-
-    out = {'y = 0': {'s = 0': sep_s0_y0.item(), 's = 1': sep_s1_y0.item()},
-           'y = 1': {'s = 0': sep_s0_y1.item(), 's = 1': sep_s1_y1.item()}
+    out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
+           'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
     return out
 
 
 def sufficiency(y_true, y_pred, s):
-    suf_s0_r0 = y_true[(y_pred == 0) * (s == 0)].sum() / ((y_pred == 0) * (s == 0)).sum()
-    suf_s1_r0 = y_true[(y_pred == 0) * (s == 1)].sum() / ((y_pred == 0) * (s == 1)).sum()
+    # TODO: implement!
 
-    suf_s0_r1 = y_true[(y_pred == 1) * (s == 0)].sum() / ((y_pred == 1) * (s == 0)).sum()
-    suf_s1_r1 = y_true[(y_pred == 1) * (s == 1)].sum() / ((y_pred == 1) * (s == 1)).sum()
-
-    out = {'r = 0': {'s = 0': suf_s0_r0.item(), 's = 1': suf_s1_r0.item()},
-           'r = 1': {'s = 0': suf_s0_r1.item(), 's = 1': suf_s1_r1.item()}
+    out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
+           'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
     return out
 

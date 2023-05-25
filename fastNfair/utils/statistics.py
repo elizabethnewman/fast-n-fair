@@ -6,19 +6,17 @@ def confusion_matrix(true_labels, pred_labels, pos_label=1):
     # returns
     #   (tp, fp, fn, tn)
     # TODO: implement!
-
+    neg_label = 1 - pos_label
+    positive_idx = (true_labels == pos_label)
+    negative_idx = (true_labels == neg_label)
     # tp : true positives (# correctly labeled as blue)
-    tp = torch.ones(1)
-
+    tp = (pred_labels[positive_idx] == pos_label).sum()
     # tn : true negatives (# correctly labeled as red)
-    tn = torch.ones(1)
-
+    tn = (pred_labels[negative_idx] == neg_label).sum()
     # fp : false positives (# incorrectly labeled as blue)
-    fp = torch.ones(1)
-
+    fp = (pred_labels[negative_idx] == pos_label).sum()
     # fn : false negative (# incorrectly labeled as red)
-    fn = torch.ones(1)
-
+    fn = (pred_labels[positive_idx] == neg_label).sum()
     return tp, fp, fn, tn
 
 
@@ -76,12 +74,40 @@ def compute_statistics(true_labels, pred_labels, pos_label=1):
 
 def independence(y_true, y_pred, s):
     # TODO: implement!
-
+    num_s0 = (s == 0).sum()
+    num_s1 = (s == 1).sum()
+    print(num_s0)
+    print(num_s1)
+    num_s0_y0 = (y_pred[s == 0] == 0).sum()
+    num_s0_y1 = (y_pred[s == 0] == 1).sum()
+    num_s1_y0 = (y_pred[s == 1] == 0).sum()
+    num_s1_y1 = (y_pred[s == 1] == 1).sum()
+    prob_y0_s0 = num_s0_y0 / num_s0
+    prob_y1_s0 = num_s0_y1 / num_s0
+    prob_y0_s1 = num_s1_y0 / num_s1
+    prob_y1_s1 = num_s1_y1 / num_s1
     out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
            'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
+    y0 = out["y = 0"]
+    y0["s = 0"] = prob_y0_s0
+    y0["s = 1"] = prob_y0_s1
+    y1 = out["y = 1"]
+    y1["s = 0"] = prob_y1_s0
+    y1["s = 1"] = prob_y1_s1
 
     return out
+
+actual = torch.randint(0, 2, (15, 1))
+classified = torch.randint(0, 2, (15, 1))
+# attribute = torch.randint(0, 2, (15, 1))
+# print(actual)
+# print(classified)
+# print(attribute)
+# print(independence(actual, classified, attribute))
+print(actual)
+print(classified)
+print(confusion_matrix(actual, classified, pos_label = 1))
 
 
 def separation(y_true, y_pred, s):

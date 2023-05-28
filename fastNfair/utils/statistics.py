@@ -117,7 +117,7 @@ def sufficiency(y_true, y_pred, s):
         if "r = %s" % r_value not in out:
             out["r = %s" % r_value] = {}
         s_key = "s = %s" % s_value
-        out["r = %s" % r_value][s_key] = ({f's = {s_value}': probability})
+        out["r = %s" % r_value][s_key] = probability
 
     # out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
     # 'r = 1': {'s = 0': 0.0, 's = 1': 0.0}

@@ -76,8 +76,6 @@ def independence(y_true, y_pred, s):
     # TODO: implement!
     num_s0 = (s == 0).sum()
     num_s1 = (s == 1).sum()
-    print(num_s0)
-    print(num_s1)
     num_s0_y0 = (y_pred[s == 0] == 0).sum()
     num_s0_y1 = (y_pred[s == 0] == 1).sum()
     num_s1_y0 = (y_pred[s == 1] == 0).sum()
@@ -98,16 +96,17 @@ def independence(y_true, y_pred, s):
 
     return out
 
-actual = torch.randint(0, 2, (15, 1))
-classified = torch.randint(0, 2, (15, 1))
+#
+# actual = torch.randint(0, 2, (15, 1))
+# classified = torch.randint(0, 2, (15, 1))
 # attribute = torch.randint(0, 2, (15, 1))
 # print(actual)
 # print(classified)
 # print(attribute)
 # print(independence(actual, classified, attribute))
-print(actual)
-print(classified)
-print(confusion_matrix(actual, classified, pos_label = 1))
+# print(actual)
+# print(classified)
+# print(confusion_matrix(actual, classified, pos_label = 1))
 
 
 def separation(y_true, y_pred, s):

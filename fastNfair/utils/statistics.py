@@ -95,10 +95,34 @@ def separation(y_true, y_pred, s):
 
 def sufficiency(y_true, y_pred, s):
     # TODO: implement!
+    # y_pred -> prediction/score (also called r)
+    # s -> Sensitive attribute
 
-    out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
-           'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
-           }
+    # conditions for (r=0, s=0), (r=0, s=1), (r=1, s=0), and (r=1, s=1) since both are binary
+
+    cond = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    out = {}
+
+    # calculate the probability P(Y = 1 | R = r, S = s) (in textbook P(Y = 1 | R = r, A = a))
+    for r_value, s_value in cond:
+        satisfied = (y_pred == r_value) & (s == s_value)
+        print("Satisfied array for r = %s, s = %s: " % (r_value, s_value))
+        print(satisfied)
+        if satisfied.sum() > 0:
+            probability = (y_true[satisfied] == 1).sum() / (y_true[satisfied].numel())
+            print(probability)
+        else:
+            probability = 0.0  # handle the case when the condition never occurs
+
+        if "r = %s" % r_value not in out:
+            out["r = %s" % r_value] = {}
+        s_key = "s = %s" % s_value
+        out["r = %s" % r_value][s_key] = ({f's = {s_value}': probability})
+
+    # out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
+    # 'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
+    # }
+
     return out
 
 
@@ -154,7 +178,7 @@ if __name__ == "__main__":
     out_sep = separation(y_true, y_pred, s)
     out_suf = sufficiency(y_true, y_pred, s)
 
-
+    print(out_suf)
 
 
 

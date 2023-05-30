@@ -85,11 +85,34 @@ def independence(y_true, y_pred, s):
 
 
 def separation(y_true, y_pred, s):
-    # TODO: implement!
+    # TODO: improve this implementation
+    print('y_true: ', y_true)
+    print('y_pred: ', y_pred)
+    total_s0 = y_true[s == 0].numel()
+    total_s1 = y_true[s == 1].numel()
+    print('total_s0: ', total_s0)
 
-    out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
-           'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
+    # calculating false positives
+    y_pred_negs = y_pred[(y_true == 0)] # y_pred only where y_true = 0
+    s_negs = s[(y_true == 0)] # s only where y_true = 0
+    num_fp0 = y_pred_negs[(s_negs == 0)].sum()
+    num_fp1 = y_pred_negs[(s_negs == 1)].sum()
+
+    # calculating true positives
+    y_pred_pos = y_pred[(y_true == 1)]  # y_pred only where y_true = 1
+    s_pos = s[(y_true == 1)]  # s only where y_true = 1
+    num_tp0 = y_pred_pos[(s_pos == 0)].sum()
+    num_tp1 = y_pred_pos[(s_pos == 1)].sum()
+
+    fp0 = num_fp0 / total_s0
+    fp1 = num_fp1 / total_s1
+    tp0 = num_tp0 / total_s0
+    tp1 = num_tp1 / total_s1
+
+    out = {'y = 0': {'s = 0': fp0, 's = 1': fp1},
+           'y = 1': {'s = 0': tp0, 's = 1': tp1}
            }
+    print(out)
     return out
 
 

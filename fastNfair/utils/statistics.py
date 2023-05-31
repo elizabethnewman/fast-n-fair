@@ -106,11 +106,11 @@ def sufficiency(y_true, y_pred, s):
     # calculate the probability P(Y = 1 | R = r, S = s) (in textbook P(Y = 1 | R = r, A = a))
     for r_value, s_value in cond:
         satisfied = (y_pred == r_value) & (s == s_value)
-        print("Satisfied array for r = %s, s = %s: " % (r_value, s_value))
-        print(satisfied)
+        #print("Satisfied array for r = %s, s = %s: " % (r_value, s_value))
+        #print(satisfied)
         if satisfied.sum() > 0:
             probability = (y_true[satisfied] == 1).sum() / (y_true[satisfied].numel())
-            print(probability)
+            #print(probability)
         else:
             probability = 0.0  # handle the case when the condition never occurs
 

@@ -152,7 +152,38 @@ def store_statistics(z, y_pred, x, y):
 
     return {'stats': out, 'cm': cm, 'fpr': fpr, 'tpr': tpr, 'auc': auc}
 
+if __name__ == "__main__":
+    # create synthetic data
 
+    # for reproducibility
+    torch.manual_seed(42)
+
+    # choose number of samples
+    n_samples = 10
+
+    # true label
+    y_true = torch.zeros(n_samples, dtype=torch.int8)
+    y_true[torch.randperm(n_samples)[:n_samples // 2]] = 1
+
+    # true attribute
+    s = torch.zeros(n_samples, dtype=torch.int8)
+    s[torch.randperm(n_samples)[:n_samples // 2]] = 1
+
+    # predicted label
+    y_pred = torch.zeros_like(y_true)
+    y_pred[torch.randperm(n_samples)[:6]] = 1
+
+    # test data
+    print('y_true = ', y_true)
+    print('y_pred = ', y_pred)
+    print('     s = ', s)
+
+    (tp, fp, fn, tn) = confusion_matrix(y_true, y_pred, pos_label=1)
+    out_ind = independence(y_true, y_pred, s)
+    out_sep = separation(y_true, y_pred, s)
+    out_suf = sufficiency(y_true, y_pred, s)
+
+    print(out_suf)
 
 
 

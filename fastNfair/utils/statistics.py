@@ -5,7 +5,6 @@ from sklearn import metrics
 def confusion_matrix(true_labels, pred_labels, pos_label=1):
     # returns
     #   (tp, fp, fn, tn)
-    # TODO: implement!
     neg_label = 1 - pos_label
     # indices where, in reality, positives and negatives, respectively, occur
     positive_idx = (true_labels == pos_label)
@@ -74,7 +73,6 @@ def compute_statistics(true_labels, pred_labels, pos_label=1):
 
 
 def independence(y_true, y_pred, s):
-    # TODO: implement!
     # Numbers of occurrences of s = 0 and s = 1, respectively
     num_s0 = (s == 0).sum()
     num_s1 = (s == 1).sum()
@@ -115,39 +113,31 @@ def independence(y_true, y_pred, s):
 
 
 def separation(y_true, y_pred, s):
-    # TODO: improve this implementation
-    print('y_true: ', y_true)
-    print('y_pred: ', y_pred)
-    total_s0 = y_true[s == 0].numel()
-    total_s1 = y_true[s == 1].numel()
-    print('total_s0: ', total_s0)
-
-    # calculating false positives
-    y_pred_negs = y_pred[(y_true == 0)] # y_pred only where y_true = 0
-    s_negs = s[(y_true == 0)] # s only where y_true = 0
-    num_fp0 = y_pred_negs[(s_negs == 0)].sum()
-    num_fp1 = y_pred_negs[(s_negs == 1)].sum()
-
-    # calculating true positives
-    y_pred_pos = y_pred[(y_true == 1)]  # y_pred only where y_true = 1
-    s_pos = s[(y_true == 1)]  # s only where y_true = 1
-    num_tp0 = y_pred_pos[(s_pos == 0)].sum()
-    num_tp1 = y_pred_pos[(s_pos == 1)].sum()
-
-    fp0 = num_fp0 / total_s0
-    fp1 = num_fp1 / total_s1
-    tp0 = num_tp0 / total_s0
-    tp1 = num_tp1 / total_s1
-
-    out = {'y = 0': {'s = 0': fp0, 's = 1': fp1},
-           'y = 1': {'s = 0': tp0, 's = 1': tp1}
+    out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
+           'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
-    print(out)
+    #print('running separation: ')
+    #print('y_true: ', y_true)
+    #print('y_pred: ', y_pred)
+    #print('     s: ', s)
+
+    # calculate P = (Y_pred = 1 | Y_true = (0 or 1) , s = (0,1))
+    combinations = [(0,0),(1,0),(0,1),(1,1)]
+
+    for y_true_value, s_value in combinations:
+        probability = 0.0
+        condition_met = (y_true == y_true_value) & (s == s_value)
+        #print("condition (", y_true_value, ",", s_value, ") met at: ", condition_met)
+        if condition_met.sum() != 0:
+            probability_tensor = y_pred[condition_met].sum() / y_pred[condition_met].numel()
+            probability = round(probability_tensor.item(), 3)
+        #print('probability: ', probability)
+        out["y = %s" % y_true_value]["s = %s" % s_value] = probability
+    #print('separation out: ', out)
     return out
 
 
 def sufficiency(y_true, y_pred, s):
-    # TODO: implement!
     # y_pred -> prediction/score (also called r)
     # s -> Sensitive attribute
 
@@ -171,6 +161,7 @@ def sufficiency(y_true, y_pred, s):
             out["r = %s" % r_value] = {}
         s_key = "s = %s" % s_value
         out["r = %s" % r_value][s_key] = probability
+        # print(out)
 
     # out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
     # 'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
@@ -230,8 +221,6 @@ if __name__ == "__main__":
     out_ind = independence(y_true, y_pred, s)
     out_sep = separation(y_true, y_pred, s)
     out_suf = sufficiency(y_true, y_pred, s)
-
-    print(out_suf)
 
 
 

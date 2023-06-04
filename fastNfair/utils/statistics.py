@@ -6,19 +6,18 @@ def confusion_matrix(true_labels, pred_labels, pos_label=1):
     # returns
     #   (tp, fp, fn, tn)
     # TODO: implement!
-
+    neg_label = 1 - pos_label
+    # indices where, in reality, positives and negatives, respectively, occur
+    positive_idx = (true_labels == pos_label)
+    negative_idx = (true_labels == neg_label)
     # tp : true positives (# correctly labeled as blue)
-    tp = torch.ones(1)
-
+    tp = (pred_labels[positive_idx] == pos_label).sum()
     # tn : true negatives (# correctly labeled as red)
-    tn = torch.ones(1)
-
+    tn = (pred_labels[negative_idx] == neg_label).sum()
     # fp : false positives (# incorrectly labeled as blue)
-    fp = torch.ones(1)
-
+    fp = (pred_labels[negative_idx] == pos_label).sum()
     # fn : false negative (# incorrectly labeled as red)
-    fn = torch.ones(1)
-
+    fn = (pred_labels[positive_idx] == neg_label).sum()
     return tp, fp, fn, tn
 
 
@@ -76,12 +75,43 @@ def compute_statistics(true_labels, pred_labels, pos_label=1):
 
 def independence(y_true, y_pred, s):
     # TODO: implement!
-
+    # Numbers of occurrences of s = 0 and s = 1, respectively
+    num_s0 = (s == 0).sum()
+    num_s1 = (s == 1).sum()
+    # num_sm_yn represents the number of occurrences of the joint condition s = m and y_hat = n
+    num_s0_y0 = (y_pred[s == 0] == 0).sum()
+    num_s0_y1 = (y_pred[s == 0] == 1).sum()
+    num_s1_y0 = (y_pred[s == 1] == 0).sum()
+    num_s1_y1 = (y_pred[s == 1] == 1).sum()
+    # take ratios of numbers of occurrences to get P(y_hat = n|s = m)
+    prob_y0_s0 = num_s0_y0 / num_s0
+    prob_y1_s0 = num_s0_y1 / num_s0
+    prob_y0_s1 = num_s1_y0 / num_s1
+    prob_y1_s1 = num_s1_y1 / num_s1
+    # populate a dictionary of dictionaries with the above probabilities
     out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
            'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
+    y0 = out["y = 0"]
+    y0["s = 0"] = prob_y0_s0
+    y0["s = 1"] = prob_y0_s1
+    y1 = out["y = 1"]
+    y1["s = 0"] = prob_y1_s0
+    y1["s = 1"] = prob_y1_s1
 
     return out
+
+# Below is stuff done for testing confusion_matrix and independence functions
+# actual = torch.randint(0, 2, (10, 1))
+# classified = torch.randint(0, 2, (10, 1))
+# attribute = torch.randint(0, 2, (10, 1))
+# print(actual)
+# print(classified)
+# print(attribute)
+# print(independence(actual, classified, attribute))
+# print(actual)
+# print(classified)
+# print(confusion_matrix(actual, classified, pos_label = 1))
 
 
 def separation(y_true, y_pred, s):
@@ -118,10 +148,34 @@ def separation(y_true, y_pred, s):
 
 def sufficiency(y_true, y_pred, s):
     # TODO: implement!
+    # y_pred -> prediction/score (also called r)
+    # s -> Sensitive attribute
 
-    out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
-           'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
-           }
+    # conditions for (r=0, s=0), (r=0, s=1), (r=1, s=0), and (r=1, s=1) since both are binary
+
+    cond = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    out = {}
+
+    # calculate the probability P(Y = 1 | R = r, S = s) (in textbook P(Y = 1 | R = r, A = a))
+    for r_value, s_value in cond:
+        satisfied = (y_pred == r_value) & (s == s_value)
+        #print("Satisfied array for r = %s, s = %s: " % (r_value, s_value))
+        #print(satisfied)
+        if satisfied.sum() > 0:
+            probability = (y_true[satisfied] == 1).sum() / (y_true[satisfied].numel())
+            #print(probability)
+        else:
+            probability = 0.0  # handle the case when the condition never occurs
+
+        if "r = %s" % r_value not in out:
+            out["r = %s" % r_value] = {}
+        s_key = "s = %s" % s_value
+        out["r = %s" % r_value][s_key] = probability
+
+    # out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
+    # 'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
+    # }
+
     return out
 
 
@@ -177,7 +231,7 @@ if __name__ == "__main__":
     out_sep = separation(y_true, y_pred, s)
     out_suf = sufficiency(y_true, y_pred, s)
 
-
+    print(out_suf)
 
 
 

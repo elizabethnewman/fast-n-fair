@@ -5,7 +5,6 @@ from sklearn import metrics
 def confusion_matrix(true_labels, pred_labels, pos_label=1):
     # returns
     #   (tp, fp, fn, tn)
-    # TODO: implement!
     neg_label = 1 - pos_label
     # indices where, in reality, positives and negatives, respectively, occur
     positive_idx = (true_labels == pos_label)
@@ -74,7 +73,6 @@ def compute_statistics(true_labels, pred_labels, pos_label=1):
 
 
 def independence(y_true, y_pred, s):
-    # TODO: implement!
     # Numbers of occurrences of s = 0 and s = 1, respectively
     num_s0 = (s == 0).sum()
     num_s1 = (s == 1).sum()
@@ -115,16 +113,31 @@ def independence(y_true, y_pred, s):
 
 
 def separation(y_true, y_pred, s):
-    # TODO: implement!
-
     out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
            'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
+    #print('running separation: ')
+    #print('y_true: ', y_true)
+    #print('y_pred: ', y_pred)
+    #print('     s: ', s)
+
+    # calculate P = (Y_pred = 1 | Y_true = (0 or 1) , s = (0,1))
+    combinations = [(0,0),(1,0),(0,1),(1,1)]
+
+    for y_true_value, s_value in combinations:
+        probability = 0.0
+        condition_met = (y_true == y_true_value) & (s == s_value)
+        #print("condition (", y_true_value, ",", s_value, ") met at: ", condition_met)
+        if condition_met.sum() != 0:
+            probability_tensor = y_pred[condition_met].sum() / y_pred[condition_met].numel()
+            probability = round(probability_tensor.item(), 3)
+        #print('probability: ', probability)
+        out["y = %s" % y_true_value]["s = %s" % s_value] = probability
+    #print('separation out: ', out)
     return out
 
 
 def sufficiency(y_true, y_pred, s):
-    # TODO: implement!
     # y_pred -> prediction/score (also called r)
     # s -> Sensitive attribute
 
@@ -148,6 +161,7 @@ def sufficiency(y_true, y_pred, s):
             out["r = %s" % r_value] = {}
         s_key = "s = %s" % s_value
         out["r = %s" % r_value][s_key] = probability
+        # print(out)
 
     # out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
     # 'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
@@ -207,8 +221,6 @@ if __name__ == "__main__":
     out_ind = independence(y_true, y_pred, s)
     out_sep = separation(y_true, y_pred, s)
     out_suf = sufficiency(y_true, y_pred, s)
-
-    print(out_suf)
 
 
 

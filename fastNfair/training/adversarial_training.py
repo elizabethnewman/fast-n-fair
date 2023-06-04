@@ -36,7 +36,7 @@ def predict_labels(out):
     return out.argmax(dim=-1)
 
 
-def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=1, device='cpu'):
+def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
     fctn.train()
     n = x.shape[0]
     b = batch_size

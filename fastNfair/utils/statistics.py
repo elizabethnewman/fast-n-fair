@@ -120,20 +120,39 @@ def separation(y_true, y_pred, s):
     #print('y_true: ', y_true)
     #print('y_pred: ', y_pred)
     #print('     s: ', s)
-
     # calculate P = (Y_pred = 1 | Y_true = (0 or 1) , s = (0,1))
-    combinations = [(0,0),(1,0),(0,1),(1,1)]
 
-    for y_true_value, s_value in combinations:
-        probability = 0.0
-        condition_met = (y_true == y_true_value) & (s == s_value)
-        #print("condition (", y_true_value, ",", s_value, ") met at: ", condition_met)
-        if condition_met.sum() != 0:
-            probability_tensor = y_pred[condition_met].sum() / y_pred[condition_met].numel()
-            probability = round(probability_tensor.item(), 3)
-        #print('probability: ', probability)
-        out["y = %s" % y_true_value]["s = %s" % s_value] = probability
-    #print('separation out: ', out)
+    # calculate the probability P(y_pred = 1 | y_true = 0, s = 0)
+    # get the location where y_true = 0 and s = 0
+    condition_met = (y_true == 0) & (s == 0)
+    # probability that y_pred = 1 given y_true = 0 and s = 0
+    prob_y1_y0_s0 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
+
+    # calculate the probability P(y_pred = 1 | y_true = 0, s = 1)
+    # get the location where y_true = 0 and s = 0
+    condition_met = (y_true == 0) & (s == 1)
+    # probability that y_pred = 1 given y_true = 0 and s = 1
+    prob_y1_y0_s1 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
+
+    # calculate the probability P(y_pred = 1 | y_true = 1, s = 0)
+    # get the location where y_true = 1 and s = 0
+    condition_met = (y_true == 1) & (s == 0)
+    # probability that y_pred = 1 given y_true = 1 and s = 0
+    prob_y1_y1_s0 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
+
+    # calculate the probability P(y_pred = 1 | y_true = 1, s = 1)
+    # get the location where y_true = 0 and s = 0
+    condition_met = (y_true == 1) & (s == 1)
+    # probability that y_pred = 1 given y_true = 1 and s = 1
+    prob_y1_y1_s1 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
+
+    y1 = out["y = 0"]
+    y1["s = 0"] = prob_y1_y0_s0
+    y1["s = 1"] = prob_y1_y0_s1
+    y1 = out["y = 1"]
+    y1["s = 0"] = prob_y1_y1_s0
+    y1["s = 1"] = prob_y1_y1_s1
+
     return out
 
 
@@ -141,31 +160,40 @@ def sufficiency(y_true, y_pred, s):
     # y_pred -> prediction/score (also called r)
     # s -> Sensitive attribute
 
-    # conditions for (r=0, s=0), (r=0, s=1), (r=1, s=0), and (r=1, s=1) since both are binary
+    # calculate the probability P(y_true = 1 | y_pred = 0, s = 0)
+    # get the location where y_pred = 0 and s = 0
+    condition_met = (y_pred == 0) & (s == 0)
+    # probability that y_true = 1 given y_pred = 0 and s = 0
+    prob_y1_y0_s0 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-    cond = [(0, 0), (0, 1), (1, 0), (1, 1)]
-    out = {}
+    # calculate the probability P(y_true = 1 | y_pred = 0, s = 1)
+    # get the location where y_pred = 0 and s = 1
+    condition_met = (y_pred == 0) & (s == 1)
+    # probability that y_true = 1 given y_pred = 0 and s = 1
+    prob_y1_y0_s1 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-    # calculate the probability P(Y = 1 | R = r, S = s) (in textbook P(Y = 1 | R = r, A = a))
-    for r_value, s_value in cond:
-        satisfied = (y_pred == r_value) & (s == s_value)
-        #print("Satisfied array for r = %s, s = %s: " % (r_value, s_value))
-        #print(satisfied)
-        if satisfied.sum() > 0:
-            probability = (y_true[satisfied] == 1).sum() / (y_true[satisfied].numel())
-            #print(probability)
-        else:
-            probability = 0.0  # handle the case when the condition never occurs
+    # calculate the probability P(y_true = 1 | y_pred = 1, s = 0)
+    # get the location where y_pred = 1 and s = 0
+    condition_met = (y_pred == 1) & (s == 0)
+    # probability that y_true = 1 given y_pred = 0 and s = 0
+    prob_y1_y1_s0 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-        if "r = %s" % r_value not in out:
-            out["r = %s" % r_value] = {}
-        s_key = "s = %s" % s_value
-        out["r = %s" % r_value][s_key] = probability
-        # print(out)
+    # calculate the probability P(y_true = 1 | y_pred = 1, s = 1)
+    # get the location where y_pred = 1 and s = 1
+    condition_met = (y_pred == 1) & (s == 1)
+    # probability that y_true = 1 given y_pred = 1 and s = 1
+    prob_y1_y1_s1 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-    # out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
-    # 'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
-    # }
+    out = {'r = 0': {'s = 0': 0.0, 's = 1': 0.0},
+           'r = 1': {'s = 0': 0.0, 's = 1': 0.0}
+           }
+
+    y1 = out["r = 0"]
+    y1["s = 0"] = prob_y1_y0_s0
+    y1["s = 1"] = prob_y1_y0_s1
+    y1 = out["r = 1"]
+    y1["s = 0"] = prob_y1_y1_s0
+    y1["s = 1"] = prob_y1_y1_s1
 
     return out
 
@@ -222,7 +250,22 @@ if __name__ == "__main__":
     out_sep = separation(y_true, y_pred, s)
     out_suf = sufficiency(y_true, y_pred, s)
 
+    # y_true =  [0, 1, 1, 0, 1, 0, 1, 0, 1, 0]
+    # y_pred = [1, 1, 0, 1, 0, 1, 1, 1, 0, 0]
+    # s =  [0, 0, 0, 1, 1, 1, 0, 0, 1, 1]
+    # Test case 1: Sufficiency
+    if out_suf['r = 0']['s = 0'] != 1:
+        print('False')
+    elif (out_suf['r = 0']['s = 1']) != (2.0/3.0):
+        print('False')
+    elif (out_suf['r = 1']['s = 0']) != (1.0/2.0):
+        print('False')
+    elif (out_suf['r = 1']['s = 1']) != 0:
+        print('False')
+    else:
+        print('True')
 
+    print('sufficiency', out_suf)
 
 
 

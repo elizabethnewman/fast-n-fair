@@ -107,21 +107,40 @@ def separation(y_true, y_pred, s):
     out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
            'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
            }
-    # calculate P = (y_pred = 1 | y_true = (0 or 1) , s = (0 or 1))
-    combinations = [(0,0),(1,0),(0,1),(1,1)]
+    
+    # calculate P = (Y_pred = 1 | Y_true = (0 or 1) , s = (0,1))
 
-    for y_true_value, s_value in combinations:
-        probability = 0.0
-        # identify elements where condition is met
-        condition_met = (y_true == y_true_value) & (s == s_value)
+    # calculate the probability P(y_pred = 1 | y_true = 0, s = 0)
+    # get the location where y_true = 0 and s = 0
+    condition_met = (y_true == 0) & (s == 0)
+    # probability that y_pred = 1 given y_true = 0 and s = 0
+    prob_y1_y0_s0 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
 
-        # check if the condition is ever met
-        if condition_met.numel() != 0:
-            # if so, calculate the probability
-            probability_tensor = y_pred[condition_met].sum() / y_pred[condition_met].numel()
-            probability = round(probability_tensor.item(), 4) # change output from tensor() to float
+    # calculate the probability P(y_pred = 1 | y_true = 0, s = 1)
+    # get the location where y_true = 0 and s = 0
+    condition_met = (y_true == 0) & (s == 1)
+    # probability that y_pred = 1 given y_true = 0 and s = 1
+    prob_y1_y0_s1 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
 
-        out["y = %s" % y_true_value]["s = %s" % s_value] = probability
+    # calculate the probability P(y_pred = 1 | y_true = 1, s = 0)
+    # get the location where y_true = 1 and s = 0
+    condition_met = (y_true == 1) & (s == 0)
+    # probability that y_pred = 1 given y_true = 1 and s = 0
+    prob_y1_y1_s0 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
+
+    # calculate the probability P(y_pred = 1 | y_true = 1, s = 1)
+    # get the location where y_true = 0 and s = 0
+    condition_met = (y_true == 1) & (s == 1)
+    # probability that y_pred = 1 given y_true = 1 and s = 1
+    prob_y1_y1_s1 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
+
+    y1 = out["y = 0"]
+    y1["s = 0"] = prob_y1_y0_s0
+    y1["s = 1"] = prob_y1_y0_s1
+    y1 = out["y = 1"]
+    y1["s = 0"] = prob_y1_y1_s0
+    y1["s = 1"] = prob_y1_y1_s1
+    
     return out
 
 
@@ -131,24 +150,41 @@ def sufficiency(y_true, y_pred, s):
     # conditions for (y_pred=0, s=0), (y_pred=0, s=1), (y_pred=1, s=0), and (y_pred=1, s=1) since both are binary
     conditions = [(0, 0), (0, 1), (1, 0), (1, 1)]
 
-    # calculate the probability P(y_true = 1 | y_pred = (0 or 1), s = (0 or 1))
-    for y_pred_value, s_value in conditions:
-        # locate indices where condition is met
-        condition_met = (y_pred == y_pred_value) & (s == s_value)
+    # calculate the probability P(y_true = 1 | y_pred = 0, s = 0)
+    # get the location where y_pred = 0 and s = 0
+    condition_met = (y_pred == 0) & (s == 0)
+    # probability that y_true = 1 given y_pred = 0 and s = 0
+    prob_y1_y0_s0 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-        # check whether the condition occurs
-        if condition_met.sum() > 0:
-            # if so, divide the # of occurences where y_true = 1 by the total number
-            probability = y_true[condition_met].sum() / y_true[condition_met].numel()
+    # calculate the probability P(y_true = 1 | y_pred = 0, s = 1)
+    # get the location where y_pred = 0 and s = 1
+    condition_met = (y_pred == 0) & (s == 1)
+    # probability that y_true = 1 given y_pred = 0 and s = 1
+    prob_y1_y0_s1 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-        else:
-            probability = 0.0  # handle the case when the condition never occurs
+    # calculate the probability P(y_true = 1 | y_pred = 1, s = 0)
+    # get the location where y_pred = 1 and s = 0
+    condition_met = (y_pred == 1) & (s == 0)
+    # probability that y_true = 1 given y_pred = 0 and s = 0
+    prob_y1_y1_s0 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-        # populate output dictionary
-        if "y_pred = %s" % y_pred_value not in out:
-            out["y_pred = %s" % y_pred_value] = {}
-        s_key = "s = %s" % s_value
-        out["y_pred = %s" % y_pred_value][s_key] = round(probability.item(), 4)
+    # calculate the probability P(y_true = 1 | y_pred = 1, s = 1)
+    # get the location where y_pred = 1 and s = 1
+    condition_met = (y_pred == 1) & (s == 1)
+    # probability that y_true = 1 given y_pred = 1 and s = 1
+    prob_y1_y1_s1 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
+
+    out = {'y_pred = 0': {'s = 0': 0.0, 's = 1': 0.0},
+           'y_pred = 1': {'s = 0': 0.0, 's = 1': 0.0}
+           }
+
+    y1 = out["y_pred = 0"]
+    y1["s = 0"] = prob_y1_y0_s0
+    y1["s = 1"] = prob_y1_y0_s1
+    y1 = out["y_pred = 1"]
+    y1["s = 0"] = prob_y1_y1_s0
+    y1["s = 1"] = prob_y1_y1_s1
+
     return out
 
 
@@ -217,10 +253,6 @@ if __name__ == "__main__":
     out_suf = sufficiency(y_true, y_pred, s)
 
     #fairness_metrics_test()
-
-
-
-
 
 
 

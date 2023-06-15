@@ -96,8 +96,10 @@ def independence(y_true, y_pred, s):
     # populate a dictionary of dictionaries with the above probabilities
     out = {'y = 0': {'s = 0': prob_y0_s0.item(),
                      's = 1': prob_y0_s1.item()},
+                     'Difference-': abs(prob_y0_s0.item() - prob_y0_s1.item()),
            'y = 1': {'s = 0': prob_y1_s0.item(),
-                     's = 1': prob_y1_s1.item()}
+                     's = 1': prob_y1_s1.item()},
+                     'Difference~': abs(prob_y1_s0.item() - prob_y1_s1.item())
            }
 
     return out
@@ -137,8 +139,10 @@ def separation(y_true, y_pred, s):
 
     out = {'y = 0': {'s = 0': prob_y1_y0_s0.item(),
                      's = 1': prob_y1_y0_s1.item()},
+                     'Difference-': abs(prob_y1_y0_s0.item() - prob_y1_y0_s1.item()),
            'y = 1': {'s = 0': prob_y1_y1_s0.item(),
-                     's = 1': prob_y1_y1_s1.item()}
+                     's = 1': prob_y1_y1_s1.item()},
+                     'Difference~': abs(prob_y1_y1_s0.item() - prob_y1_y1_s1.item())
            }
     
     return out
@@ -176,8 +180,10 @@ def sufficiency(y_true, y_pred, s):
 
     out = {'y_pred = 0': {'s = 0': prob_y1_y0_s0.item(),
                           's = 1': prob_y1_y0_s1.item()},
+                          'Difference-': abs(prob_y1_y0_s0.item() - prob_y1_y0_s1.item()),
            'y_pred = 1': {'s = 0': prob_y1_y1_s0.item(),
-                          's = 1': prob_y1_y1_s1.item()}
+                          's = 1': prob_y1_y1_s1.item()},
+                          'Difference~': abs(prob_y1_y1_s0.item() - prob_y1_y1_s1.item())
            }
 
     return out

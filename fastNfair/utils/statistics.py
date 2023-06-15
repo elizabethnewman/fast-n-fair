@@ -76,31 +76,32 @@ def compute_statistics(true_labels, pred_labels, pos_label=1):
 
 def independence(y_true, y_pred, s):
     # calculate P(y_pred = (0 or 1) | s = (0 or 1))
+
     # Numbers of occurrences of s = 0 and s = 1, respectively
     num_s0 = (s == 0).sum()
     num_s1 = (s == 1).sum()
+
     # num_sm_yn represents the number of occurrences of the joint condition s = m and y_pred = n
     num_s0_y0 = (y_pred[s == 0] == 0).sum()
     num_s0_y1 = (y_pred[s == 0] == 1).sum()
     num_s1_y0 = (y_pred[s == 1] == 0).sum()
     num_s1_y1 = (y_pred[s == 1] == 1).sum()
+
     # take ratios of numbers of occurrences to get P(y_hat = n|s = m)
     prob_y0_s0 = num_s0_y0 / num_s0
     prob_y1_s0 = num_s0_y1 / num_s0
     prob_y0_s1 = num_s1_y0 / num_s1
     prob_y1_s1 = num_s1_y1 / num_s1
+
     # populate a dictionary of dictionaries with the above probabilities
-    out = {'y = 0': {'s = 0': 0.0, 's = 1': 0.0},
-           'y = 1': {'s = 0': 0.0, 's = 1': 0.0}
+    out = {'y = 0': {'s = 0': prob_y0_s0.item(),
+                     's = 1': prob_y0_s1.item()},
+           'y = 1': {'s = 0': prob_y1_s0.item(),
+                     's = 1': prob_y1_s1.item()}
            }
-    y0 = out["y = 0"]
-    y0["s = 0"] = round(prob_y0_s0.item(),4)
-    y0["s = 1"] = round(prob_y0_s1.item(),4)
-    y1 = out["y = 1"]
-    y1["s = 0"] = round(prob_y1_s0.item(),4)
-    y1["s = 1"] = round(prob_y1_s1.item(),4)
 
     return out
+
 
 def separation(y_true, y_pred, s):
     # returns out
@@ -134,12 +135,11 @@ def separation(y_true, y_pred, s):
     # probability that y_pred = 1 given y_true = 1 and s = 1
     prob_y1_y1_s1 = (y_pred[condition_met] == 1).sum() / (y_pred[condition_met]).numel()
 
-    y1 = out["y = 0"]
-    y1["s = 0"] = prob_y1_y0_s0
-    y1["s = 1"] = prob_y1_y0_s1
-    y1 = out["y = 1"]
-    y1["s = 0"] = prob_y1_y1_s0
-    y1["s = 1"] = prob_y1_y1_s1
+    out = {'y = 0': {'s = 0': prob_y1_y0_s0.item(),
+                     's = 1': prob_y1_y0_s1.item()},
+           'y = 1': {'s = 0': prob_y1_y1_s0.item(),
+                     's = 1': prob_y1_y1_s1.item()}
+           }
     
     return out
 
@@ -174,16 +174,11 @@ def sufficiency(y_true, y_pred, s):
     # probability that y_true = 1 given y_pred = 1 and s = 1
     prob_y1_y1_s1 = (y_true[condition_met] == 1).sum() / (y_true[condition_met]).numel()
 
-    out = {'y_pred = 0': {'s = 0': 0.0, 's = 1': 0.0},
-           'y_pred = 1': {'s = 0': 0.0, 's = 1': 0.0}
+    out = {'y_pred = 0': {'s = 0': prob_y1_y0_s0.item(),
+                          's = 1': prob_y1_y0_s1.item()},
+           'y_pred = 1': {'s = 0': prob_y1_y1_s0.item(),
+                          's = 1': prob_y1_y1_s1.item()}
            }
-
-    y1 = out["y_pred = 0"]
-    y1["s = 0"] = prob_y1_y0_s0
-    y1["s = 1"] = prob_y1_y0_s1
-    y1 = out["y_pred = 1"]
-    y1["s = 0"] = prob_y1_y1_s0
-    y1["s = 1"] = prob_y1_y1_s1
 
     return out
 
@@ -208,22 +203,49 @@ def store_statistics(z, y_pred, x, y_true):
 
     return {'stats': out, 'cm': cm, 'fpr': fpr, 'tpr': tpr, 'auc': auc}
 
+
 def fairness_metrics_test():
-    y_true = torch.tensor([0,1,0,1,0,1,0,1,0,1])
-    y_pred = torch.tensor([0,1,1,0,0,0,1,1,0,1])
-    s =      torch.tensor([1,1,1,1,1,0,0,0,0,0])
+    # setup synthetic data
+    y_true = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+    y_pred = torch.tensor([0, 1, 1, 0, 0, 0, 1, 1, 0, 1])
+    s      = torch.tensor([1, 1, 1, 1, 1, 0, 0, 0, 0, 0])
+
     print('y_true: ', y_true)
     print('y_pred: ', y_pred)
     print('     s: ', s)
-    ind_pass = (independence(y_true,y_pred,s) == {'y = 0': {'s = 0': 0.4, 's = 1': 0.6}, 'y = 1': {'s = 0': 0.6, 's = 1': 0.4}})
+
+    # independence
+    ind_true = {'y = 0': {'s = 0': 2 / 5, 's = 1': 3 / 5},
+                'y = 1': {'s = 0': 3 / 5, 's = 1': 2 / 5}}
+    ind_computed = independence(y_true, y_pred, s)
+    ind_pass = verify_fairness_metrics_almost_equal(ind_true, ind_computed)
     print('Independence passed: ', ind_pass)
-    sep_pass = (separation(y_true,y_pred,s) == {'y = 0': {'s = 0': 0.5, 's = 1': 0.3333}, 'y = 1': {'s = 0': 0.6667, 's = 1': 0.5}})
+
+    # separation
+    sep_true = {'y = 0': {'s = 0': 1 / 2, 's = 1': 1 / 3},
+                'y = 1': {'s = 0': 2 / 3, 's = 1': 1 / 2}}
+    sep_computed = separation(y_true, y_pred, s)
+    sep_pass = verify_fairness_metrics_almost_equal(sep_true, sep_computed)
     print('Separation passed: ', sep_pass)
-    suf_pass = (sufficiency(y_true,y_pred,s) == {'y_pred = 0': {'s = 0': 0.5, 's = 1': 0.3333}, 'y_pred = 1': {'s = 0': 0.6667, 's = 1': 0.5}})
+
+    # sufficiency
+    suf_true = {'y_pred = 0': {'s = 0': 1 / 2, 's = 1': 1 / 3},
+                'y_pred = 1': {'s = 0': 2 / 3, 's = 1': 1 / 2}}
+    suf_computed = sufficiency(y_true, y_pred, s)
+    suf_pass = verify_fairness_metrics_almost_equal(suf_true, suf_computed)
     print('Sufficiency passed: ', suf_pass)
 
     passed = (ind_pass & sep_pass & suf_pass)
     return passed
+
+
+def verify_fairness_metrics_almost_equal(out_true, out, tol=1e-6):
+    flag = True
+    for key1 in out_true.keys():
+        for key2 in out_true[key1].keys():
+            flag = flag & (abs(out_true[key1][key2] - out[key1][key2]) < tol)
+
+    return flag
 
 
 if __name__ == "__main__":
@@ -252,7 +274,7 @@ if __name__ == "__main__":
     out_sep = separation(y_true, y_pred, s)
     out_suf = sufficiency(y_true, y_pred, s)
 
-    #fairness_metrics_test()
+    fairness_metrics_test()
 
 
 

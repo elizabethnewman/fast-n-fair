@@ -183,7 +183,7 @@ def sufficiency(y_true, y_pred, s):
                           'Difference y_pred = 0 (s1-s0)': prob_y1_y0_s1.item() - prob_y1_y0_s0.item()},
            'y_pred = 1': {'s = 0': prob_y1_y1_s0.item(),
                           's = 1': prob_y1_y1_s1.item(),
-                          'Difference y_pred = 1 (s1-s0)': prob_y1_y0_s1.item() - prob_y1_y0_s0.item()}}
+                          'Difference y_pred = 1 (s1-s0)': prob_y1_y1_s1.item() - prob_y1_y1_s0.item()}}
 
     return out
 

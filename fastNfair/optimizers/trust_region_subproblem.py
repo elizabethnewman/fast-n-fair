@@ -24,15 +24,24 @@ class TrustRegionSubproblem:
             # per sample way
             if self.per_sample:
                 for i in range(x.shape[0]):
-
+                    # optimal s is the Newton step (unconstrained minimum of quadratic) if it satisfies constraint
+                    # otherwise, the solution will be a regularized version of Newton step whose norm equals delta (on TR boundary)
+                    # need a certain value of a Lagrange multiplier (alpha in the case of this code) to achieve previous condition
                     if s[i].norm() > delta:
+                        # Given that we need boundary solution, code that follows uses bisection search to find alpha of this solution
+                        # eigenvalues and eigenvectors of Hessian
                         d, v = torch.linalg.eig(d2fc[i].squeeze(-1))
                         d, v = torch.real(d), torch.real(v)
-
+                        # suppose s(alpha) is the regularized Newton step corresponding to a Lagrange mulitplier alpha
+                        # the function s_a(alpha) returning a vector s_a such that s(alpha) = vs_a(alpha)
+                        # becasue Hessian is symmetric, v is orthogonal, so ||s(alpha)|| = ||s_a(alpha)||
+                        # thus, we can just evaluate the norm of s_a instead of s in our bisection search
                         s_a = lambda alpha: (-v.T @ dfc[i].squeeze()) / (d + alpha)
+                        # the function we seek to be 0 in the bisection search
                         g = lambda alpha: s_a(alpha).norm() - delta
+                        # high value of alpha for bisection search
                         alpha_high = dfc[i].norm() / delta
-
+                        # low value of alpha for bisection search
                         alpha_low = 0
                         if not g(alpha_low) > 0 or g(alpha_low) == torch.inf:
                             alpha_low = 1e-16

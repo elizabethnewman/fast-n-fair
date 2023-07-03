@@ -41,7 +41,8 @@ args = parser.parse_args()
 
 args.epochs = 20
 args.verbose = True
-args.robust = True
+args.robust = False
+args.radius = 1e-1
 args.plot = True
 
 
@@ -115,8 +116,19 @@ if args.plot:
     plt.legend()
     plt.show()
 
+    visualize_unfair_data((x_train, y_train, s_train), fctn.net, show_orig=True, domain=(-2, 2, -2, 2))
+    plt.xlim([-0.1, 1.1])
+    plt.ylim([-0.1, 1.1])
+    plt.xlabel('x1')
+    plt.ylabel('x2')
+    plt.show()
 
 
+#%%
+
+from pprint import pprint
+
+pprint(results_eval['train']['fairness'])
 
 
 

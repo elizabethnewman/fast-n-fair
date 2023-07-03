@@ -18,10 +18,14 @@ class TrustRegionSubproblem:
             try:
                 s = torch.linalg.solve(d2fc.squeeze(-1), -dfc.squeeze(-1))
             except:
+                print('here')
                 s = -dfc.squeeze(-1)
 
             # s = s.unsqueeze(-1)
             # s = s.permute(0, 2, 1)
+
+            D, V = torch.linalg.eig(d2fc.squeeze(-1))
+            D, V = torch.real(D), torch.real(V)
 
             if delta is None or delta == 0:
                 delta = torch.norm(s)
@@ -36,8 +40,9 @@ class TrustRegionSubproblem:
                     if s[i].norm() > delta:
                         # Given that we need boundary solution, code that follows uses bisection search to find alpha of this solution
                         # eigenvalues and eigenvectors of Hessian
-                        d, v = torch.linalg.eig(d2fc[i].squeeze(-1))
-                        d, v = torch.real(d), torch.real(v)
+                        # d, v = torch.linalg.eig(d2fc[i].squeeze(-1))
+                        # d, v = torch.real(d), torch.real(v)
+                        d, v = D[i], V[i]
                         # suppose s(alpha) is the regularized Newton step corresponding to a Lagrange mulitplier alpha
                         # the function s_a(alpha) returning a vector s_a such that s(alpha) = vs_a(alpha)
                         # becasue Hessian is symmetric, v is orthogonal, so ||s(alpha)|| = ||s_a(alpha)||

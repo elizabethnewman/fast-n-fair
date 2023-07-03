@@ -33,7 +33,7 @@ class ProjectedGradientDescent:
             x_1 = projection(x_1, radius)
             # value = (x - x_1).norm()
 
-            if (x - x_1).norm() < .001:
+            if (x - x_1).norm() < .0001:
                 break
 
             x.grad.zero_()  # reset the gradient for the next step
@@ -43,11 +43,13 @@ class ProjectedGradientDescent:
 
 
 if __name__ == "__main__":
-    x = torch.tensor([4.0, 4.0], requires_grad=True)
+    x = torch.tensor([3.0, 4.0, 5.0], requires_grad=True)
     print("x:", x)
+    print("star")
 
-    dot_product_fn = lambda x: torch.dot(x, x)  # define the function
+    log_sum_exp_func = lambda x: torch.logsumexp(x, 0) # define the function
+    print(log_sum_exp_func(x))
     opt = ProjectedGradientDescent(max_iter=10)
-    x = opt.solve(dot_product_fn, torch.tensor([2.0, 10.0]), 1, 1)  # pass the function, not the result
+    x = opt.solve(log_sum_exp_func, torch.tensor([2.0, 3.0, 4.0]), 1, 1)  # pass the function, not the result
 
     print(x)

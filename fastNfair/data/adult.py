@@ -28,6 +28,10 @@ def generate_adult(load_dir='./raw/adult/', attr='race'):
     for name in ('age', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week'):
         idx.append(headers.index(name))
 
+    # idx = []
+    # for name in ('capital-gain', 'capital-loss'):
+    #     idx.append(headers.index(name))
+
     # put data in format for us to learn
     x_train = torch.from_numpy(data_train[:, idx].astype(np.float32))
     x_train, x_m, x_s = normalize_data(x_train)

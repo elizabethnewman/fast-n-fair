@@ -42,7 +42,7 @@ args = parser.parse_args()
 
 args.epochs = 10
 args.verbose = True
-args.robust = False
+args.robust = True
 args.radius = 1e-1
 args.plot = True
 

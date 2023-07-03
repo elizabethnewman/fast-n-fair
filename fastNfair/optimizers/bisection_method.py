@@ -1,7 +1,7 @@
 
 import torch
 from copy import deepcopy
-
+import numpy as np
 
 class BisectionMethod:
 
@@ -21,17 +21,17 @@ class BisectionMethod:
             else:
                 raise ValueError('BisectionMethod: g(a) and g(b) must be different signs')
 
-        if torch.sign(ga) != 0 and torch.sign(gb) != 0:
+        if np.sign(ga) != 0 and np.sign(gb) != 0:
             for n in range(self.max_iter):
                 c = (a + b) / 2.0
                 x = deepcopy(c)
                 gc = g(c)
 
-                if torch.sign(gc) == 0:
+                if np.sign(gc) == 0:
                     x = deepcopy(c)
                     break
 
-                if torch.sign(ga) != torch.sign(gc):
+                if np.sign(ga) != np.sign(gc):
                     b = deepcopy(c)
                     # gb = deepcopy(gc)
                 else:
@@ -41,7 +41,7 @@ class BisectionMethod:
                 if abs(b - a) <= self.tol * max(abs(a), abs(b)):
                     break
         else:
-            if torch.sign(ga) == 0:
+            if np.sign(ga) == 0:
                 x = deepcopy(a)
             else:
                 x = deepcopy(b)

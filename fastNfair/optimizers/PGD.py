@@ -45,7 +45,6 @@ class ProjectedGradientDescent:
 if __name__ == "__main__":
     x = torch.tensor([4.0, 4.0], requires_grad=True)
     print("x:", x)
-    print("star")
 
     dot_product_fn = lambda x: torch.dot(x, x)  # define the function
     opt = ProjectedGradientDescent(max_iter=10)

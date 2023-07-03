@@ -14,7 +14,12 @@ class TrustRegionSubproblem:
         with torch.no_grad():
             fc, dfc, d2fc = fctn(x, do_gradient=True, do_Hessian=True)[:3]
 
-            s = torch.linalg.solve(d2fc.squeeze(-1), -dfc.squeeze(-1))
+            # solve with pytorch
+            try:
+                s = torch.linalg.solve(d2fc.squeeze(-1), -dfc.squeeze(-1))
+            except:
+                s = -dfc.squeeze(-1)
+
             # s = s.unsqueeze(-1)
             # s = s.permute(0, 2, 1)
 
@@ -23,16 +28,26 @@ class TrustRegionSubproblem:
 
             # per sample way
             if self.per_sample:
+                # TODO: make this faster (remove for loop)
                 for i in range(x.shape[0]):
-
+                    # optimal s is the Newton step (unconstrained minimum of quadratic) if it satisfies constraint
+                    # otherwise, the solution will be a regularized version of Newton step whose norm equals delta (on TR boundary)
+                    # need a certain value of a Lagrange multiplier (alpha in the case of this code) to achieve previous condition
                     if s[i].norm() > delta:
+                        # Given that we need boundary solution, code that follows uses bisection search to find alpha of this solution
+                        # eigenvalues and eigenvectors of Hessian
                         d, v = torch.linalg.eig(d2fc[i].squeeze(-1))
                         d, v = torch.real(d), torch.real(v)
-
+                        # suppose s(alpha) is the regularized Newton step corresponding to a Lagrange mulitplier alpha
+                        # the function s_a(alpha) returning a vector s_a such that s(alpha) = vs_a(alpha)
+                        # becasue Hessian is symmetric, v is orthogonal, so ||s(alpha)|| = ||s_a(alpha)||
+                        # thus, we can just evaluate the norm of s_a instead of s in our bisection search
                         s_a = lambda alpha: (-v.T @ dfc[i].squeeze()) / (d + alpha)
+                        # the function we seek to be 0 in the bisection search
                         g = lambda alpha: s_a(alpha).norm() - delta
+                        # high value of alpha for bisection search
                         alpha_high = dfc[i].norm() / delta
-
+                        # low value of alpha for bisection search
                         alpha_low = 0
                         if not g(alpha_low) > 0 or g(alpha_low) == torch.inf:
                             alpha_low = 1e-16
@@ -76,7 +91,7 @@ if __name__ == "__main__":
     import hessQuik.networks as net
     import hessQuik.layers as lay
     import hessQuik.activations as act
-    from fastNfair.objective_function import ObjectiveFunctionMSE
+    from fastNfair.objective_functions import ObjectiveFunctionMSE
     import matplotlib.pyplot as plt
 
     class TestFunctionTrustRegion(nn.Module):
@@ -97,6 +112,7 @@ if __name__ == "__main__":
     my_net = lay.singleLayer(2, 2, act.identityActivation(), bias=False)
     my_net.K = nn.Parameter(torch.eye(2))
 
+    K_opt = torch.linalg.lstsq(x.T, y.T)[0]
     # def fctn_special(x, **kwargs):
     #     f = 10 * (x[:, 1] - x[:, 0] ** 2) ** 2 + (1 - x[:, 0]) ** 2
     #     df1 = -40 * (x[:, 1] - x[:, 0] ** 2) * x[:, 0] - 2 * (1 - x[:, 0])
@@ -123,6 +139,15 @@ if __name__ == "__main__":
 
     delta = 1.5
     xt, info = opt.solve(test_fctn, x, delta=delta)
+
+    # create landscape
+    n = 50
+    xy = torch.linspace(-3, 3, n)
+    x_grid, y_grid = torch.meshgrid(xy, xy, indexing='ij')
+    z_grid = torch.cat((x_grid.reshape(-1, 1), y_grid.reshape(-1, 1)), dim=1) @ K_opt.T
+    out_grid = fctn()
+
+    plt.contourf(x_grid, y_grid, z_grid.reshape(x_grid.shape))
 
     theta = torch.linspace(0, 2 * torch.pi, 100)
 

@@ -9,5 +9,5 @@ setup(
     author='elizabethnewman',
     author_email='elizabeth.newman@emory.edu',
     description='',
-    install_requires=['torch', 'torchvision', 'hessQuik>=0.0.2', 'matplotlib', 'numpy', 'scikit-learn']
+    install_requires=['torch', 'torchvision', 'hessQuik>=0.0.2', 'matplotlib', 'numpy', 'scikit-learn', 'pandas']
 )

@@ -28,7 +28,7 @@ class Evaluator:
 
     def compute_statistics(self, z, y_pred, x, y):
         out = stats.compute_statistics(y, y_pred)
-        fpr, tpr, _ = metrics.roc_curve(y, z.detach(), pos_label=1)
+        fpr, tpr, _ = metrics.roc_curve(y.reshape(-1), z.detach().reshape(-1), pos_label=1)
         auc = metrics.auc(fpr, tpr)
 
         return {'stats': out, 'fpr': fpr, 'tpr': tpr, 'auc': auc}

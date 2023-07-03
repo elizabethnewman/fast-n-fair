@@ -3,17 +3,19 @@ from math import log2, floor
 import hessQuik
 from hessQuik.utils import convert_to_base, extract_data, insert_data
 from typing import Callable, Tuple, Optional, Union
-from fastNfair.optimizers import TrustRegionSubproblem
+# from fastNfair.optimizers import TrustRegionSubproblem
+from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
 from fastNfair.training.adversarial_training import ObjectiveFunctionMaximize
 
 
 def robust_network_derivative_check(fctn, x, y, radius=1e-2,
                                     num_test: int = 15, base: float = 2.0, tol: float = 0.1,
                                     verbose: bool = False) -> Optional[bool]:
+    fctn.zero_grad()
 
     # initial evaluation
     with torch.no_grad():
-        opt = TrustRegionSubproblem(max_iter=100, per_sample=True)
+        opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
         fctn_max = ObjectiveFunctionMaximize(fctn, y)
         xt, info = opt.solve(fctn_max, x, radius)
 
@@ -24,6 +26,7 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
     loss0 = loss.detach()
     theta0 = extract_data(fctn, 'data')
     grad_theta0 = extract_data(fctn, 'grad')
+    # print(grad_theta0.norm())
 
     # perturbation
     dtheta = torch.randn_like(theta0)
@@ -40,7 +43,6 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
 
     # with torch.no_grad():
     E0, E1 = [], []
-    loss_dft, loss_d2ft = 0.0, 0.0
     for k in range(num_test):
         h = base ** (-k)
         insert_data(fctn, theta0 + h * dtheta)
@@ -48,6 +50,8 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
             opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
             fctn_max = ObjectiveFunctionMaximize(fctn, y)
             xt, info = opt.solve(fctn_max, x, radius)
+
+        # xt = x.clone()
 
         # compute loss
         losst, _, _, info = fctn(xt, y)
@@ -109,22 +113,36 @@ if __name__ == "__main__":
     # #            )
 
     import torch
-    from hessQuik.networks import fullyConnectedNN
+    import hessQuik.networks as net
+    import hessQuik.layers as lay
+    import hessQuik.activations as act
     from fastNfair.utils import objective_function_derivative_check
     from fastNfair.objective_functions import ObjectiveFunctionMSE
 
     torch.manual_seed(123)
     torch.set_default_dtype(torch.float64)
 
-    print('=========== LOGISTIC REGRESSION ===========')
-    x = torch.randn(10, 2)
-    # y = torch.rand(10, 1)
-    # y /= y.sum(dim=1, keepdim=True)
-    y = torch.randn(x.shape[0], 5)
-    # y = torch.randint(0, 2, (x.shape[0],))
-    # y = y.to(torch.float32)
+    # sanity check - does this work for a quadratic function
+    n = 3
+    x = torch.randn(n, 2)
+    y = torch.randn(n, 3)
 
-    net = fullyConnectedNN([2, 5])
-    fctn = ObjectiveFunctionMSE(net)
+    # my_net = lay.singleLayer(x.shape[1], y.shape[1], bias=True)
+    # my_net = net.NN(lay.singleLayer(x.shape[1], 7, act=act.softplusActivation()),
+    #                 lay.singleLayer(7, y.shape[1], act=act.identityActivation()))
+
+    width = 7
+    my_net = net.NN(lay.singleLayer(x.shape[1], width, act=act.tanhActivation()),
+                    net.resnetNN(width, 4, act=act.softplusActivation()),
+                    net.fullyConnectedNN([width, 13, 5], act=act.quadraticActivation()),
+                    lay.singleLayer(5, y.shape[1], act=act.identityActivation())
+                    )
+
+    fctn = ObjectiveFunctionMSE(my_net)
+    theta0 = extract_data(fctn, 'data')
 
     robust_network_derivative_check(fctn, x, y, verbose=True, radius=1e3)
+
+    insert_data(fctn, theta0)
+    robust_network_derivative_check(fctn, x, y, verbose=True, radius=1e-1)
+

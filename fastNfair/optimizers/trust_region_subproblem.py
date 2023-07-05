@@ -140,32 +140,33 @@ if __name__ == "__main__":
     test_fctn = TestFunctionTrustRegion(fctn, y)
     tmp = test_fctn(x)
 
-    opt = TrustRegionSubproblem(per_sample=True)
+    opt = TrustRegionSubproblem(per_sample=False)
+    #print(opt)
 
     delta = 1.5
     xt, info = opt.solve(test_fctn, x, delta=delta)
-
+    print(xt)
     # create landscape
-    n = 50
-    xy = torch.linspace(-3, 3, n)
-    x_grid, y_grid = torch.meshgrid(xy, xy, indexing='ij')
-    z_grid = torch.cat((x_grid.reshape(-1, 1), y_grid.reshape(-1, 1)), dim=1) @ K_opt.T
-    out_grid = fctn()
+    # n = 50
+    # xy = torch.linspace(-3, 3, n)
+    # x_grid, y_grid = torch.meshgrid(xy, xy, indexing='ij')
+    # z_grid = torch.cat((x_grid.reshape(-1, 1), y_grid.reshape(-1, 1)), dim=1) @ K_opt.T
+    # out_grid = fctn()
 
-    plt.contourf(x_grid, y_grid, z_grid.reshape(x_grid.shape))
+    # plt.contourf(x_grid, y_grid, z_grid.reshape(x_grid.shape))
 
-    theta = torch.linspace(0, 2 * torch.pi, 100)
+    # theta = torch.linspace(0, 2 * torch.pi, 100)
 
-    for i in range(x.shape[0]):
-        plt.plot(x[i, 0] + delta * torch.cos(theta), x[i, 1] + delta * torch.sin(theta), 'k')
+    # for i in range(x.shape[0]):
+        # plt.plot(x[i, 0] + delta * torch.cos(theta), x[i, 1] + delta * torch.sin(theta), 'k')
 
-    plt.plot(x[:, 0], x[:, 1], 'kx', markersize=10, label='x^{(0)}')
-    plt.plot(y[:, 0], y[:, 1], 'bs', markersize=10, label='y')
-    plt.plot(xt[:, 0], xt[:, 1], 'ro', markersize=10, label='xt')
-    plt.xlabel('x1')
-    plt.ylabel('x2')
-    plt.axis('square')
-    plt.show()
+    # plt.plot(x[:, 0], x[:, 1], 'kx', markersize=10, label='x^{(0)}')
+    # plt.plot(y[:, 0], y[:, 1], 'bs', markersize=10, label='y')
+    # plt.plot(xt[:, 0], xt[:, 1], 'ro', markersize=10, label='xt')
+    # plt.xlabel('x1')
+    # plt.ylabel('x2')
+    # plt.axis('square')
+    # plt.show()
 
     # xx, yy = torch.meshgrid(torch.linspace(-6, 6, 100), torch.linspace(-3, 3, 100), indexing='ij')
     # zz = test_fctn(torch.cat((xx.reshape(-1, 1), yy.reshape(-1, 1)), dim=1))[0]

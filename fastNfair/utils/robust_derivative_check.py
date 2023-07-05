@@ -3,7 +3,8 @@ from math import log2, floor
 import hessQuik
 from hessQuik.utils import convert_to_base, extract_data, insert_data
 from typing import Callable, Tuple, Optional, Union
-# from fastNfair.optimizers import TrustRegionSubproblem
+from fastNfair.optimizers import TrustRegionSubproblem
+from fastNfair.optimizers import ProjectedGradientDescentv1
 from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
 from fastNfair.training.adversarial_training import ObjectiveFunctionMaximize
 

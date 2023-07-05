@@ -1,2 +1,6 @@
 from fastNfair.optimizers.bisection_method import BisectionMethod
 from fastNfair.optimizers.trust_region_subproblem import TrustRegionSubproblem
+from fastNfair.optimizers.PGD import ProjectedGradientDescentv1
+from fastNfair.optimizers.PGDhessquik import ProjectedGradientDescentv3
+from fastNfair.optimizers.PGDv2 import ProjectedGradientDescentv2
+from fastNfair.optimizers.rand_perturbation import RandomPerturbation

@@ -42,7 +42,7 @@ args = parser.parse_args()
 
 args.epochs = 10
 args.verbose = True
-args.robust = True
+args.robust = False
 args.radius = 1e-1
 args.plot = True
 
@@ -90,7 +90,7 @@ fctn = ObjectiveFunctionLogisticRegression(my_net)
 opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
-trainer = TrainerSGD(opt, max_epochs=args.epochs)
+trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size= 100)
 
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),

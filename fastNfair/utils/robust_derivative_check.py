@@ -5,24 +5,34 @@ from hessQuik.utils import convert_to_base, extract_data, insert_data
 from typing import Callable, Tuple, Optional, Union
 # from fastNfair.optimizers import TrustRegionSubproblem
 from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
+from fastNfair.optimizers.PGD import ProjectedGradientDescent
 from fastNfair.training.adversarial_training import ObjectiveFunctionMaximize
 
+def solve_inner_problem(type, fctn, x,y,radius):
+    # evaluate inner problem
+    with torch.no_grad():
+        if type == 'PGD':
+            opt = ProjectedGradientDescent()
+        elif type == 'TRS':
+            opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
+
+        fctn_max = ObjectiveFunctionMaximize(fctn, y)
+        xt, info = opt.solve(fctn_max, x, radius)
+
+    # compute loss
+    loss, _, _, info = fctn(xt,y)
+    return loss
 
 def robust_network_derivative_check(fctn, x, y, radius=1e-2,
                                     num_test: int = 15, base: float = 2.0, tol: float = 0.1,
                                     verbose: bool = False) -> Optional[bool]:
     fctn.zero_grad()
 
-    # initial evaluation
-    with torch.no_grad():
-        opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
-        fctn_max = ObjectiveFunctionMaximize(fctn, y)
-        xt, info = opt.solve(fctn_max, x, radius)
-
-    # compute loss
-    loss, _, _, info = fctn(xt, y)
+    # initial solution of inner optimization problem
+    loss = solve_inner_problem('TRS',fctn,x,y,radius)
     loss.backward()
 
+    # extract initial values
     loss0 = loss.detach()
     theta0 = extract_data(fctn, 'data')
     grad_theta0 = extract_data(fctn, 'grad')
@@ -44,18 +54,15 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
     # with torch.no_grad():
     E0, E1 = [], []
     for k in range(num_test):
+        # update perturbation scale
         h = base ** (-k)
+
         insert_data(fctn, theta0 + h * dtheta)
-        with torch.no_grad():
-            opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
-            fctn_max = ObjectiveFunctionMaximize(fctn, y)
-            xt, info = opt.solve(fctn_max, x, radius)
 
-        # xt = x.clone()
+        # solve inner optimization problem for perturbation
+        losst = solve_inner_problem('TRS',fctn,x,y,radius)
 
-        # compute loss
-        losst, _, _, info = fctn(xt, y)
-
+        # compute 0th and 1st order errors
         E0.append(torch.norm(loss0 - losst.detach()).item())
         E1.append(torch.norm(loss0 + h * dfdtheta - losst.detach()).item())
 

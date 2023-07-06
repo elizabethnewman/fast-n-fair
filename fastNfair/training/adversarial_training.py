@@ -2,8 +2,8 @@ import torch
 from copy import deepcopy
 # from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
 from fastNfair.optimizers.trust_region_subproblem import TrustRegionSubproblem
-
-
+from fastNfair.optimizers.PGDhessquik import ProjectedGradientDescentv3
+from fastNfair.optimizers.rand_perturbation import RandomPerturbation
 
 class ObjectiveFunctionMaximize(torch.nn.Module):
     def __init__(self, fctn, y):
@@ -38,7 +38,7 @@ def predict_labels(out):
     return out.argmax(dim=-1)
 
 
-def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
+def train_one_epoch(fctn, optimizer, robustOptimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
     fctn.train()
     n = x.shape[0]
     b = batch_size
@@ -61,7 +61,13 @@ def train_one_epoch(fctn, optimizer, x, y, s, regularizer=None, batch_size=32, r
             loss, _, _, info = fctn(xb, yb)
         else:
             with torch.no_grad():
-                opt = TrustRegionSubproblem(max_iter=100, per_sample=True)
+                if robustOptimizer == 1:
+                    opt = TrustRegionSubproblem(max_iter=100, per_sample=True)
+                elif robustOptimizer == 2:
+                    opt = ProjectedGradientDescentv3(max_iter=100)
+                else:
+                    opt = RandomPerturbation()
+
                 fctn_max = ObjectiveFunctionMaximize(fctn, yb)
                 xt, info = opt.solve(fctn_max, xb, radius)
 

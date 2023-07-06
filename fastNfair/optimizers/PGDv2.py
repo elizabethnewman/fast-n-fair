@@ -9,37 +9,38 @@ def projection(s_x, radius):
     return s_x
 
 
-class ProjectedGradientDescentv1:
+class ProjectedGradientDescentv2:
 
     def __init__(self, max_iter = 10):
-        super(ProjectedGradientDescentv1, self).__init__()
+        super(ProjectedGradientDescentv2, self).__init__()
         self.max_iter = max_iter
 
     def solve(self, function, x, step_size, radius):
         x = x.clone().detach().requires_grad_(True)
+        delta_x = torch.zeros(torch.numel(x))
 
         for _ in range(self.max_iter):
-            y = function(x)
+            y = function(x + delta_x)
             y.backward()
 
             # taking step in the gradient direction
             dfc = x.grad
-            x_1 = x - step_size * dfc
+            delta_x1 = delta_x - step_size * dfc
 
-            while function(x_1) >= function(x):
+            while function(x + delta_x1) >= function(x + delta_x):
                 step_size = step_size / 1.5
-                x_1 = x - step_size * dfc
+                delta_x1 = delta_x - step_size * dfc
 
-            x_1 = projection(x_1, radius)
+            delta_x1 = projection(delta_x1, radius)
             # value = (x - x_1).norm()
 
-            if (x - x_1).norm() < .0001:
+            if (delta_x - delta_x1).norm() < .0001:
                 break
 
             x.grad.zero_()  # reset the gradient for the next step
-            x = x_1.clone().detach().requires_grad_(True)  # update x after zeroing gradients
+            delta_x = delta_x1.clone().detach().requires_grad_(True)  # update x after zeroing gradients
 
-        return x
+        return delta_x
 
 
 if __name__ == "__main__":

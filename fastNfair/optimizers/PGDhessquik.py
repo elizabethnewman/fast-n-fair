@@ -5,13 +5,21 @@ from copy import deepcopy
 
 class ProjectedGradientDescentv3:
 
-    def __init__(self, max_iter = 10):
-        super(ProjectedGradientDescent, self).__init__()
+    def __init__(self, max_iter = 200, per_sample=False):
+        super(ProjectedGradientDescentv3, self).__init__()
         self.max_iter = max_iter
+        self.per_sample = per_sample
 
-    def projection(self, s_x, radius):
-        if s_x.norm() > radius:
-            s_x = (radius / s_x.norm()) * s_x
+    def projection(self, s_x, radius, per_sample):
+        if per_sample:
+            norm_delta = torch.sqrt(torch.sum(s_x**2, dim=1))
+            s_x = s_x / torch.reshape(norm_delta, (-1,1))
+
+            vector_radius = torch.ones_like(s_x) * radius
+            s_x = s_x * torch.minimum(vector_radius, torch.reshape(norm_delta, (-1,1)))
+        else:
+            if s_x.norm() > radius:
+                s_x = (radius / s_x.norm()) * s_x
 
         return s_x
 
@@ -32,7 +40,7 @@ class ProjectedGradientDescentv3:
                 step_size = step_size / 1.5
                 delta_x1 = delta_x - step_size * dfc.squeeze(-1)
 
-            delta_x1 = self.projection(delta_x1, radius)
+            delta_x1 = self.projection(delta_x1, radius, self.per_sample)
             # value = (x - x_1).norm()
 
             if (delta_x - delta_x1).norm() < .0001:
@@ -78,7 +86,7 @@ if __name__ == "__main__":
     test_fctn = TestFunctionPGD(fctn, y)
 
     tmp = test_fctn(x)
-    opt = ProjectedGradientDescent()
+    opt = ProjectedGradientDescentv3(per_sample=True)
 
     delta = 1.5
     xt = opt.solve(test_fctn, x, 1, 1.5)

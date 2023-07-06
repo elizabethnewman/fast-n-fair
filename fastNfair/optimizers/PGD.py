@@ -12,7 +12,7 @@ def projection(s_x, radius):
 class ProjectedGradientDescentv1:
 
     def __init__(self, max_iter = 10):
-        super(ProjectedGradientDescent, self).__init__()
+        super(ProjectedGradientDescentv1, self).__init__()
         self.max_iter = max_iter
 
     def solve(self, function, x, step_size, radius):

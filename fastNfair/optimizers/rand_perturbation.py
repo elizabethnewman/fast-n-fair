@@ -8,7 +8,7 @@ class RandomPerturbation:
         super(RandomPerturbation, self).__init__()
 
     def solve(self, x, radius):
-        torch.manual_seed(42)
+        #torch.manual_seed(42)
         delta = torch.randn_like(x)
         delta = (delta / delta.norm()) * radius
         return x + delta
@@ -18,3 +18,6 @@ if __name__ == "__main__":
     opt = RandomPerturbation();
     x_t = opt.solve(x, 1)
     print(x_t)
+
+
+

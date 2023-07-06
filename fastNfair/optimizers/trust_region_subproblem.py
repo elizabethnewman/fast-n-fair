@@ -140,7 +140,7 @@ if __name__ == "__main__":
     test_fctn = TestFunctionTrustRegion(fctn, y)
     tmp = test_fctn(x)
 
-    opt = TrustRegionSubproblem(per_sample=False)
+    opt = TrustRegionSubproblem(per_sample=True)
     #print(opt)
 
     delta = 1.5

@@ -1,10 +1,6 @@
 import torch
 
-torch.manual_seed(42)
-
 class RandomPerturbation:
-
-
     def __init__(self, per_sample = False):
         super(RandomPerturbation, self).__init__()
         self.per_sample = per_sample

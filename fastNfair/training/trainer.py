@@ -6,9 +6,10 @@ import time
 
 class TrainerSGD:
 
-    def __init__(self, optimizer, scheduler=None, regularier=None, batch_size=5, max_epochs=10, device='cpu'):
+    def __init__(self, optimizer, robustOptimizer = 'trust', scheduler=None, regularier=None, batch_size=5, max_epochs=10, device='cpu'):
 
         self.optimizer = optimizer
+        self.robustOptimizer = robustOptimizer
         self.scheduler = scheduler
         self.regularizer = regularier
         self.batch_size = batch_size
@@ -48,7 +49,7 @@ class TrainerSGD:
         # main iteration
         for i in range(self.max_epochs):
             t0 = time.perf_counter()
-            loss_running, acc_running = train_one_epoch(fctn, self.optimizer, x_train, y_train, s_train,
+            loss_running, acc_running = train_one_epoch(fctn, self.optimizer, x_train, y_train, s_train, robustOptimizer=self.robustOptimizer,
                                                         batch_size=self.batch_size,
                                                         robust=robust, radius=radius,
                                                         regularizer=self.regularizer, device=self.device)

@@ -6,7 +6,7 @@ from fastNfair.training import TrainerSGD, Evaluator
 import hessQuik.activations as act
 import hessQuik.layers as lay
 import hessQuik.networks as net
-
+import sys
 import argparse
 # argument parser
 parser = argparse.ArgumentParser(prog='FastNFairToyExample',
@@ -17,32 +17,38 @@ parser = argparse.ArgumentParser(prog='FastNFairToyExample',
 parser.add_argument('--seed', default=42)
 
 # data
-parser.add_argument('--p1', default=0.5, help='percent of s = 0 in class y = 0')
-parser.add_argument('--p2', default=0.5, help='percent of s = 0 in class y = 1')
-parser.add_argument('--alpha', default=1e-1, help='unfair scale')
-parser.add_argument('--u', default=(1.0, 1.0), help='unfair direction')
-parser.add_argument('--n-train', default=200, help='number of training points')
-parser.add_argument('--n-val', default=50, help='number of training points')
-parser.add_argument('--n-test', default=50, help='number of training points')
+parser.add_argument('--p1', default=0.5, type=float, help='percent of s = 0 in class y = 0')
+parser.add_argument('--p2', default=0.5, type=float, help='percent of s = 0 in class y = 1')
+parser.add_argument('--alpha', default=1e-1, type=float, help='unfair scale')
+parser.add_argument('--u', default=(1.0, 1.0), type=float, nargs='+', help='unfair direction')
+parser.add_argument('--n-train', default=200, type=int, help='number of training points')
+parser.add_argument('--n-val', default=50, type=int, help='number of training points')
+parser.add_argument('--n-test', default=50, type=int, help='number of training points')
 
 # training
-parser.add_argument('--epochs', default=10)
-parser.add_argument('-lr', '--lr', default=1e-2)
+parser.add_argument('--epochs', default=10, type=int)
+parser.add_argument('-lr', '--lr', default=1e-2, type=float)
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--robust', action='store_true')
-parser.add_argument('--radius', default=2e-1)
+parser.add_argument('--radius', default=2e-1, type=float)
+parser.add_argument('-rp', '--robustOptimizer', default='trust', type=str)
 
 # general
 parser.add_argument('-p', '--plot', action='store_true')
 
+# save
+parser.add_argument('-s', '--save', action='store_true')
+
 # parse
 args = parser.parse_args()
 
+print(args)
 
-args.epochs = 20
+
+args.epochs = 10
 args.verbose = True
-args.robust = False
-args.radius = 1e-1
+args.robust = True
+args.radius = .15
 args.plot = True
 
 
@@ -83,7 +89,7 @@ fctn = ObjectiveFunctionLogisticRegression(my_net)
 opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
-trainer = TrainerSGD(opt, max_epochs=args.epochs)
+trainer = TrainerSGD(opt,robustOptimizer=args.robustOptimizer, max_epochs=args.epochs)
 
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
@@ -126,9 +132,31 @@ if args.plot:
 
 #%%
 
-from pprint import pprint
+if args.verbose:
+    from pprint import pprint
+    pprint(results_eval['train']['fairness'])
 
-pprint(results_eval['train']['fairness'])
+#%% saving results
+if args.save:
+    import pickle
+    import os
+    dir_name = 'unfair_2d_results/'
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+
+    # make filenmae
+    filename = ''
+
+    if args.robust:
+        filename += 'robust' + '--' + args.robustOptimizer + ('--r_%0.2e' % args.radius) + '.txt'
+    else:
+        filename += 'nonrobust' + '.txt'
+
+    print('Saving as...')
+    print(filename)
+
+    with open(filename, 'w') as f:
+        f.write(str(args))
 
 
 

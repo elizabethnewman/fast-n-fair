@@ -38,7 +38,7 @@ def predict_labels(out):
     return out.argmax(dim=-1)
 
 
-def train_one_epoch(fctn, optimizer, robustOptimizer, x, y, s, regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
+def train_one_epoch(fctn, optimizer, x, y, s, robustOptimizer = 'pgd', regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
     fctn.train()
     n = x.shape[0]
     b = batch_size
@@ -61,15 +61,16 @@ def train_one_epoch(fctn, optimizer, robustOptimizer, x, y, s, regularizer=None,
             loss, _, _, info = fctn(xb, yb)
         else:
             with torch.no_grad():
-                if robustOptimizer == 1:
-                    opt = TrustRegionSubproblem(max_iter=100, per_sample=True)
-                elif robustOptimizer == 2:
-                    opt = ProjectedGradientDescentv3(max_iter=100)
-                else:
-                    opt = RandomPerturbation()
-
                 fctn_max = ObjectiveFunctionMaximize(fctn, yb)
-                xt, info = opt.solve(fctn_max, xb, radius)
+                if robustOptimizer == 'trust':
+                    opt = TrustRegionSubproblem(max_iter=100, per_sample=True)
+                    xt, info = opt.solve(fctn_max, xb, radius)
+                elif robustOptimizer == 'pgd':
+                    opt = ProjectedGradientDescentv3(max_iter=5000, per_sample=True)
+                    xt = opt.solve(fctn_max, xb, 0.1, radius)
+                elif robustOptimizer == 'rand':
+                    opt = RandomPerturbation(per_sample=True)
+                    xt = opt.solve(xb, radius)
 
             optimizer.zero_grad()
             loss, _, _, info = fctn(xt, yb)

@@ -22,8 +22,8 @@ parser.add_argument('--p1', default=0.5, help='percent of s = 0 in class y = 0')
 parser.add_argument('--p2', default=0.5, help='percent of s = 0 in class y = 1')
 parser.add_argument('--alpha', default=1e-1, help='unfair scale')
 parser.add_argument('--u', default=(1.0, 1.0), help='unfair direction')
-parser.add_argument('--n-train', default=10000, help='number of training points')
-parser.add_argument('--n-val', default=2000, help='number of training points')
+parser.add_argument('--n-train', default=1500, help='number of training points')
+parser.add_argument('--n-val', default=500, help='number of training points')
 parser.add_argument('--n-test', default=1000, help='number of training points')
 
 # training
@@ -43,7 +43,7 @@ args = parser.parse_args()
 args.epochs = 10
 args.verbose = True
 args.robust = False
-args.radius = .3
+args.radius = 1e1
 args.plot = True
 
 print(args)
@@ -58,11 +58,36 @@ torch.manual_seed(args.seed)
 # number of data points
 n_train, n_val, n_test = args.n_train, args.n_val, args.n_test
 
-(x_train, y_train, s_train), (x_test, y_test, s_test) = generate_adult(load_dir='../data/raw/adult/', attr='sex')
+# (x_train, y_train, s_train), (x_test, y_test, s_test) = generate_adult(load_dir='../data/raw/adult/', attr='sex')
+(x, y, s), (x_test, y_test, s_test) = generate_lsat(p_train=0.8)
 
+# split, but make sure val has some of all classes
+import math
+x_train, x_val = torch.empty(0, x.shape[1]), torch.empty(0, x.shape[1])
+y_train, y_val = torch.empty(0, dtype=y.dtype), torch.empty(0, dtype=y.dtype)
+s_train, s_val = torch.empty(0, dtype=s.dtype), torch.empty(0, dtype=s.dtype)
 
-x_val, y_val, s_val = x_train[n_train:], y_train[n_train:], s_train[n_train:]
-x_train, y_train, s_train = x_train[:n_train], y_train[:n_train], s_train[:n_train]
+p_train = 0.8
+for yi in [0, 1]:
+    for sj in [0, 1]:
+        idx_ij = ((y == yi) * (s == sj))
+        x_ij = x[idx_ij]
+        y_ij = y[idx_ij]
+        s_ij = s[idx_ij]
+        nn = y_ij.numel()
+        n_train = min(math.floor(p_train * nn), 10)
+
+        idx = torch.randperm(nn)
+        x_train = torch.cat((x_train, x_ij[idx[:n_train]]), dim=0)
+        y_train = torch.cat((y_train, y_ij[idx[:n_train]]))
+        s_train = torch.cat((s_train, s_ij[idx[:n_train]]))
+
+        x_val = torch.cat((x_val, x_ij[idx[:n_train]]), dim=0)
+        y_val = torch.cat((y_val, y_ij[idx[:n_train]]))
+        s_val = torch.cat((s_val, s_ij[idx[:n_train]]))
+
+# x_val, y_val, s_val = x_train[n_train:], y_train[n_train:], s_train[n_train:]
+# x_train, y_train, s_train = x_train[:n_train], y_train[:n_train], s_train[:n_train]
 # x_test, y_test, s_test = x_test[:n_test], y_test[:n_test], s_test[:n_test]
 
 if args.plot:
@@ -90,13 +115,12 @@ fctn = ObjectiveFunctionLogisticRegression(my_net)
 opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
-trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size= 100)
+trainer = TrainerSGD(opt, max_epochs=args.epochs)
 
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
                               verbose=args.verbose, robust=args.robust, radius=args.radius)
-print("Weights and biases of the network:")
-print(my_net.state_dict())
+
 
 #%% compute metrics
 evaluator = Evaluator()
@@ -129,9 +153,8 @@ from pprint import pprint
 pprint(results_eval['train']['fairness'])
 
 
+#%%
+from fastNfair.data.lsat import visualize_lsat_data
 
-
-
-
-
-
+visualize_lsat_data((x_train, y_train, s_train), my_net)
+plt.show()

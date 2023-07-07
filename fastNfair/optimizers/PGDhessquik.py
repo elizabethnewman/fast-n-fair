@@ -43,7 +43,7 @@ class ProjectedGradientDescentv3:
             delta_x1 = self.projection(delta_x1, radius, self.per_sample)
             # value = (x - x_1).norm()
 
-            if (delta_x - delta_x1).norm() < .0001:
+            if (delta_x - delta_x1).norm() < .000001:
                 break
 
             #x.grad.zero_()  # reset the gradient for the next step
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             return loss, dloss, d2loss, info
 
 
-    x = torch.tensor([[0.5, 1.0], [0.0, 0.0], [-1.0, -1.0]])
+    x = torch.tensor([[0.5, 1.0], [2.0, 3.0], [-1.0, -1.0]])
     y = torch.tensor([[1.0, -2.0], [1.0, 1.0], [-2.0, 0.5]])
 
     my_net = lay.singleLayer(2, 2, act.identityActivation(), bias=False)

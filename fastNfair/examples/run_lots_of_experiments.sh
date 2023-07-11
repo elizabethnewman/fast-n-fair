@@ -17,15 +17,3 @@ do
   python ex_unfair_2d.py --save --robust --radius $r --robustOptimizer 'rand' --verbose
 done
 
-# python ex_unfair_2d.py --save --verbose
-python ex_lsat.py --save --verbose
-# python ex_adult.py --save --verbose
-
-
-export PATH=$PATH:/c/Users/Hung/AppData/Local/Microsoft/WindowsApps/python3
-
-
-for r in $(seq 0.1 0.1 0.8);
-do
-  python3 ex_unfair_2d.py --save --robust --radius $r
-done

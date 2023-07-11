@@ -5,7 +5,7 @@ Fast adversarial training for fair machine learning
 
 We can install using ```pip```
 ```console
-!python -m pip install git+https://github.com/elizabethnewman/fast-n-fair.git
+python -m pip install git+https://github.com/elizabethnewman/fast-n-fair.git
 ```
 or clone from Github directly
 ```console

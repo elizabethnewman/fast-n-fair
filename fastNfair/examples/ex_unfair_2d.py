@@ -44,14 +44,6 @@ args = parser.parse_args()
 
 print(args)
 
-# args.epochs = 20
-# args.verbose = True
-# args.robust = True
-# args.radius = .15
-# args.plot = True
-
-
-
 
 #%% generate data
 
@@ -159,11 +151,12 @@ if args.save:
     else:
         filename += 'nonrobust'
 
-
     print('Saving as...')
     print(filename)
 
     with open(dir_name + filename + '.pkl', 'wb') as f:
+        print('Saving as...')
+        print(dir_name + filename)
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
 

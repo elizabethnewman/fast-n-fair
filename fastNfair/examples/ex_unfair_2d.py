@@ -42,15 +42,14 @@ parser.add_argument('-s', '--save', action='store_true')
 # parse
 args = parser.parse_args()
 
-print(args)
 
 
-args.epochs = 10
+#args.epochs = 10
 args.verbose = True
-args.robust = True
-args.radius = .15
-args.plot = True
-
+#args.robust = True
+#args.radius = .15
+#args.plot = True
+print(args)
 
 
 #%% generate data
@@ -89,11 +88,12 @@ fctn = ObjectiveFunctionLogisticRegression(my_net)
 opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
-trainer = TrainerSGD(opt,robustOptimizer=args.robustOptimizer, max_epochs=args.epochs)
+trainer = TrainerSGD(opt, robustOptimizer=args.robustOptimizer, max_epochs=args.epochs)
 
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
                               verbose=args.verbose, robust=args.robust, radius=args.radius)
+
 
 
 #%% compute metrics
@@ -140,6 +140,7 @@ if args.verbose:
 if args.save:
     import pickle
     import os
+    from pprint import pprint
     dir_name = 'unfair_2d_results/'
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
@@ -148,16 +149,21 @@ if args.save:
     filename = ''
 
     if args.robust:
-        filename += 'robust' + '--' + args.robustOptimizer + ('--r_%0.2e' % args.radius) + '.txt'
+        filename += 'robust' + '--' + args.robustOptimizer + ('--r_%0.2e' % args.radius)
     else:
-        filename += 'nonrobust' + '.txt'
+        filename += 'nonrobust'
 
     print('Saving as...')
     print(filename)
 
-    with open(filename, 'w') as f:
-        f.write(str(args))
+    with open(dir_name + filename + '.pkl', 'wb') as f:
+        results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
+        pickle.dump(results, f)
 
+    with open(dir_name + filename + '.txt', 'w') as f:
+        f.write(str(results_train) + "\n")
+        f.write(str(args) + "\n")
+        f.write(str(results_eval))
 
 
 

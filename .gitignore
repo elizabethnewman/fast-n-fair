@@ -139,3 +139,4 @@ fastNfair/examples/raw/mnist/MNIST/raw/t10k-images-idx3-ubyte
 fastNfair/examples/raw/mnist/MNIST/raw/t10k-labels-idx1-ubyte
 fastNfair/examples/raw/mnist/MNIST/raw/train-images-idx3-ubyte
 fastNfair/examples/raw/mnist/MNIST/raw/train-labels-idx1-ubyte
+*.pkl

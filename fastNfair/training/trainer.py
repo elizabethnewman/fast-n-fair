@@ -6,7 +6,7 @@ import time
 
 class TrainerSGD:
 
-    def __init__(self, optimizer, robustOptimizer = 'trust', scheduler=None, regularier=None, batch_size=5, max_epochs=10, device='cpu'):
+    def __init__(self, optimizer, robustOptimizer= 'trust', scheduler=None, regularier=None, batch_size=5, max_epochs=10, device='cpu'):
 
         self.optimizer = optimizer
         self.robustOptimizer = robustOptimizer

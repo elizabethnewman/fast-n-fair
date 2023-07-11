@@ -1,11 +1,13 @@
 import torch
 from copy import deepcopy
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 
 class ProjectedGradientDescentv3:
 
-    def __init__(self, max_iter = 200, per_sample=False):
+    def __init__(self, max_iter = 100, per_sample=False):
         super(ProjectedGradientDescentv3, self).__init__()
         self.max_iter = max_iter
         self.per_sample = per_sample
@@ -23,32 +25,43 @@ class ProjectedGradientDescentv3:
 
         return s_x
 
-    def solve(self, function, x, step_size, radius):
+    def solve(self, function, x, step_size, radius, max_divisions = 40):
         delta_x = torch.zeros_like(x)
         x = x.clone().detach().requires_grad_(True)
-
         for _ in range(self.max_iter):
             y, dfc = function(x + delta_x, do_gradient = True)[:2]
+            # cosine = torch.dot(delta_x, dfc) / (delta_x.norm() * dfc.norm())
+            # if cosine < -0.9999:
+                # return x + delta_x
             #y = function(x)
             #y.backward()
 
             # taking step in the gradient direction
             #dfc = x.grad
             delta_x1 = delta_x - step_size * dfc.squeeze(-1)
-
-            while function(x + delta_x1)[0] >= y:
+            i = 1
+            while function(x + delta_x1)[0] >= y and i <= max_divisions:
                 step_size = step_size / 1.5
                 delta_x1 = delta_x - step_size * dfc.squeeze(-1)
-
+                i += 1
+            if i == max_divisions:
+                print("Line search broke")
+                return x + delta_x
             delta_x1 = self.projection(delta_x1, radius, self.per_sample)
             # value = (x - x_1).norm()
-
-            if (delta_x - delta_x1).norm() < .0001:
+            if (delta_x - delta_x1).norm() < 10**(-4):
+                # for i in range(len(dfc)):
+                    # cosine = torch.dot(delta_x[i], dfc.squeeze(-1)[i]) / (delta_x[i].norm() * dfc.squeeze(-1)[i].norm())
+                    # print(cosine)
+                    # print(delta_x[i].norm())
+                # y = dfc.squeeze(-1) / delta_x
+                # for i in range(len(y)):
+                   # plt.plot(np.arange(len(y[i])), y[i].detach().numpy())
                 break
 
             #x.grad.zero_()  # reset the gradient for the next step
             delta_x = delta_x1.clone()
-
+        # print(delta_x)
         return x + delta_x
 
 
@@ -73,7 +86,7 @@ if __name__ == "__main__":
             return loss, dloss, d2loss, info
 
 
-    x = torch.tensor([[0.5, 1.0], [0.0, 0.0], [-1.0, -1.0]])
+    x = torch.tensor([[0.5, 1.0], [2.0, 3.0], [-1.0, -1.0]])
     y = torch.tensor([[1.0, -2.0], [1.0, 1.0], [-2.0, 0.5]])
 
     my_net = lay.singleLayer(2, 2, act.identityActivation(), bias=False)

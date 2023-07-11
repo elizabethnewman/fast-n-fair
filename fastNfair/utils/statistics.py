@@ -208,6 +208,8 @@ def store_statistics(z, y_pred, x, y_true):
 
     return {'stats': out, 'cm': cm, 'fpr': fpr, 'tpr': tpr, 'auc': auc}
 
+if __name__ == "__main__":
+    # create synthetic data
 
 def fairness_metrics_test():
     # setup synthetic data

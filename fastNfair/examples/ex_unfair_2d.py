@@ -6,7 +6,7 @@ from fastNfair.training import TrainerSGD, Evaluator
 import hessQuik.activations as act
 import hessQuik.layers as lay
 import hessQuik.networks as net
-
+import sys
 import argparse
 # argument parser
 parser = argparse.ArgumentParser(prog='FastNFairToyExample',
@@ -44,12 +44,12 @@ args = parser.parse_args()
 
 print(args)
 
-
-# args.epochs = 20
+args.epochs = 20
 args.verbose = True
 args.robust = True
 args.radius = .15
 args.plot = True
+
 
 
 
@@ -158,12 +158,14 @@ if args.save:
     else:
         filename += 'nonrobust'
 
+
     print('Saving as...')
     print(filename)
 
     with open(dir_name + filename + '.pkl', 'wb') as f:
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
+
 
 
 

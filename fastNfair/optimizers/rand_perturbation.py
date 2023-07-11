@@ -1,8 +1,6 @@
 import torch
 
 class RandomPerturbation:
-
-
     def __init__(self, per_sample = False):
         super(RandomPerturbation, self).__init__()
         self.per_sample = per_sample

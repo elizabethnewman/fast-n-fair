@@ -46,10 +46,10 @@ print(args)
 
 
 # args.epochs = 20
-# args.verbose = True
-# args.robust = True
-# args.radius = .15
-# args.plot = True
+args.verbose = True
+args.robust = True
+args.radius = .15
+args.plot = True
 
 
 

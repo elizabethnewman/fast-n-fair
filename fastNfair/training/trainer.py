@@ -20,7 +20,8 @@ class TrainerSGD:
         results = {'train': {'loss': [], 'accuracy': []},
                    'val': {'loss': [], 'accuracy': []},
                    'test': {'loss': None, 'accuracy': None},
-                   'theta': []}
+                   'theta': [],
+                   'history': dict()}
 
         # extract data
         x_train, y_train, s_train = data_train
@@ -36,15 +37,20 @@ class TrainerSGD:
         results['train']['accuracy'].append(acc_train)
         results['val']['loss'].append(loss_val)
         results['val']['accuracy'].append(acc_val)
-        # results['theta'].append(deepcopy(fctn.net.state_dict()))
+        results['theta'].append(deepcopy(fctn.net.state_dict()))
+        results['history']['headers'] = ('epoch', 'time', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc')
+        results['history']['frmt'] = '{:<15d}{:<15.4f}{:<15.4e}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}'
+        results['history']['values'] = []
+
+        his_iter = [-1, 0.0, self.optimizer.state_dict()['param_groups'][0]['lr'], 0.0, 0.0, loss_train, acc_train,
+                    loss_val, acc_val]
+        results['history']['values'].append(his_iter)
 
         if verbose:
             print((9 * '{:<15s}').format(' ', ' ', ' ',  'running', ' ', 'train', ' ', 'val', ' '))
-            print((9 * '{:<15s}').format('epoch', 'time', 'lr', 'loss', 'acc', 'loss', 'acc', 'loss', 'acc'))
+            print((9 * '{:<15s}').format(*results['history']['headers']))
+            print(results['history']['frmt'].format(*his_iter))
 
-            print_frmt = '{:<15d}{:<15.4f}{:<15.4e}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}{:<15.4e}{:<15.4f}'
-            print(print_frmt.format(-1, 0.0, self.optimizer.state_dict()['param_groups'][0]['lr'],
-                                    0.0, 0.0, loss_train, acc_train, loss_val, acc_val))
 
         # main iteration
         for i in range(self.max_epochs):
@@ -63,11 +69,13 @@ class TrainerSGD:
             results['train']['accuracy'].append(acc_train)
             results['val']['loss'].append(loss_val)
             results['val']['accuracy'].append(acc_val)
-            # results['theta'].append(deepcopy(fctn.net.state_dict()))
+            results['theta'].append(deepcopy(fctn.net.state_dict()))
+            his_iter = [i, t1 - t0, self.optimizer.state_dict()['param_groups'][0]['lr'],
+                        loss_running, acc_running, loss_train, acc_train, loss_val, acc_val]
+            results['history']['values'].append(his_iter)
 
             if verbose:
-                print(print_frmt.format(i, t1 - t0, self.optimizer.state_dict()['param_groups'][0]['lr'],
-                                        loss_running, acc_running, loss_train, acc_train, loss_val, acc_val))
+                print(results['history']['frmt'].format(*his_iter))
 
             if self.scheduler is not None:
                 self.scheduler.step()

@@ -6,19 +6,20 @@ from typing import Callable, Tuple, Optional, Union
 from fastNfair.optimizers import TrustRegionSubproblem
 from fastNfair.optimizers import ProjectedGradientDescentv1
 from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
-from fastNfair.optimizers.PGD import ProjectedGradientDescent
+from fastNfair.optimizers.PGDhessquik import ProjectedGradientDescentv3
 from fastNfair.training.adversarial_training import ObjectiveFunctionMaximize
 
 def solve_inner_problem(type, fctn, x,y,radius):
     # evaluate inner problem
     with torch.no_grad():
         if type == 'PGD':
-            opt = ProjectedGradientDescent()
+            opt = ProjectedGradientDescentv3(max_iter=1)
+            fctn_max = ObjectiveFunctionMaximize(fctn, y)
+            xt = opt.solve(fctn_max, x, 1, radius)
         elif type == 'TRS':
             opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
-
-        fctn_max = ObjectiveFunctionMaximize(fctn, y)
-        xt, info = opt.solve(fctn_max, x, radius)
+            fctn_max = ObjectiveFunctionMaximize(fctn, y)
+            xt, info = opt.solve(fctn_max, x, radius)
 
     # compute loss
     loss, _, _, info = fctn(xt,y)
@@ -30,7 +31,7 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
     fctn.zero_grad()
 
     # initial solution of inner optimization problem
-    loss = solve_inner_problem('TRS',fctn,x,y,radius)
+    loss = solve_inner_problem('PGD',fctn,x,y,radius)
     loss.backward()
 
     # extract initial values
@@ -61,7 +62,7 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
         insert_data(fctn, theta0 + h * dtheta)
 
         # solve inner optimization problem for perturbation
-        losst = solve_inner_problem('TRS',fctn,x,y,radius)
+        losst = solve_inner_problem('PGD',fctn,x,y,radius)
 
         # compute 0th and 1st order errors
         E0.append(torch.norm(loss0 - losst.detach()).item())

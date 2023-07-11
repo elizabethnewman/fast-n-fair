@@ -104,6 +104,7 @@ if __name__ == "__main__":
     # for reproducibility
     torch.manual_seed(42)
 
+
     # generate data
     data_train = generate_unfair_data(200)
     data_val = generate_unfair_data(50)

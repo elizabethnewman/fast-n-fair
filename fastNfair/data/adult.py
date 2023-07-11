@@ -96,8 +96,10 @@ def visualize_adult_data(data, net=None, domain=None):
     idx1 = (s == 0)
     plt.scatter(x[idx1, 0], x[idx1, 1], None, y[idx1], marker='$W$', cmap=cmap)
 
+
     idx2 = (s == 1)
     plt.scatter(x[idx2, 0], x[idx2, 1], None, y[idx2], marker='$N$', cmap=cmap)
+
 
 
 

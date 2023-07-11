@@ -117,6 +117,8 @@ if args.plot:
     metrics.ConfusionMatrixDisplay(np.array(cm).reshape(2, -1)).plot()
     plt.show()
 
+    plt.figure()
+
     for j in ('full', 's = 0', 's = 1'):
         fpr, tpr, auc = itemgetter(*('fpr', 'tpr', 'auc'))(results_eval['train'][j])
         plt.plot(fpr, tpr, label=j + ': AUC = %0.4f' % auc)
@@ -128,21 +130,23 @@ if args.plot:
     plt.legend()
     plt.show()
 
+    plt.figure()
+
 #%%
 if args.verbose:
     from pprint import pprint
     pprint(results_eval['train']['fairness'])
 
+
 #%% saving results
 if args.save:
     import pickle
     import os
-    from pprint import pprint
     dir_name = 'adult_results/'
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
 
-    # make filename
+    # make filenmae
     filename = ''
 
     if args.robust:
@@ -156,10 +160,6 @@ if args.save:
     with open(dir_name + filename + '.pkl', 'wb') as f:
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
-
-    with open(dir_name + filename + '.txt', 'w') as f:
-        f.write(str(args))
-        f.write(str(results_eval))
 
 
 

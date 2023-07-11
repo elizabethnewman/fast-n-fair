@@ -31,7 +31,7 @@ parser.add_argument('-lr', '--lr', default=1e-2, type=float)
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--robust', action='store_true')
 parser.add_argument('--radius', default=2e-1, type=float)
-parser.add_argument('-rp', '--robustOptimizer', default='trust', type=str)
+parser.add_argument('--robustOptimizer', default='trust', type=str)
 
 # general
 parser.add_argument('-p', '--plot', action='store_true')
@@ -43,13 +43,13 @@ parser.add_argument('-s', '--save', action='store_true')
 args = parser.parse_args()
 
 
-
 #args.epochs = 10
 args.verbose = True
 #args.robust = True
 #args.radius = .15
 #args.plot = True
 print(args)
+
 
 
 #%% generate data
@@ -111,6 +111,8 @@ if args.plot:
     metrics.ConfusionMatrixDisplay(np.array(cm).reshape(2, -1)).plot()
     plt.show()
 
+    plt.figure()
+
     for j in ('full', 's = 0', 's = 1'):
         fpr, tpr, auc = itemgetter(*('fpr', 'tpr', 'auc'))(results_eval['train'][j])
         plt.plot(fpr, tpr, label=j + ': AUC = %0.4f' % auc)
@@ -122,12 +124,16 @@ if args.plot:
     plt.legend()
     plt.show()
 
+    plt.figure()
+
     visualize_unfair_data((x_train, y_train, s_train), fctn.net, show_orig=True, domain=(-2, 2, -2, 2))
     plt.xlim([-0.1, 1.1])
     plt.ylim([-0.1, 1.1])
     plt.xlabel('x1')
     plt.ylabel('x2')
     plt.show()
+
+    plt.figure()
 
 
 #%%
@@ -160,10 +166,7 @@ if args.save:
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
 
-    with open(dir_name + filename + '.txt', 'w') as f:
-        f.write(str(results_train) + "\n")
-        f.write(str(args) + "\n")
-        f.write(str(results_eval))
+
 
 
 

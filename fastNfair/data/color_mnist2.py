@@ -86,24 +86,24 @@ def xor(a, b):
     return (a - b).abs()
 
 
-def generate_color_mnist_binary(x, y, p=0.5, p_label=0.25):
+def generate_color_mnist_binary(x, y, p=0.5):
     # x is (N, C, H, W)
 
     # get number of labels
     n = y.numel()
 
-    # scale images down (for efficiency)
+    # scale images down for efficiency
     x = x[..., ::2, ::2]
 
     # split into binary
     mid_digit = torch.unique(y).mean()
     labels = 1 * (y > mid_digit)
 
-    # flip labels with probability p_label
+    # flip labels with probability 0.25
     # flip if bernoulli = 1
-    labels = xor(labels, bernoulli(p_label, n))
+    # labels = xor(labels, bernoulli(0.25, n))
 
-    # get color labels (flip from true labels with probability p)
+    # get color labels
     colors = xor(labels, bernoulli(p, n))
 
     # create color images
@@ -111,6 +111,9 @@ def generate_color_mnist_binary(x, y, p=0.5, p_label=0.25):
 
     # zero out channel with wrong color
     x[torch.arange(n), (1 - colors).long()] *= 0
+
+    # some historic data says color1 is more likely to be classified as 1 and color2 more likely classified as 0
+
 
     return x, labels, colors
 

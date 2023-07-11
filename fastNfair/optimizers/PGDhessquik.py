@@ -43,7 +43,7 @@ class ProjectedGradientDescentv3:
             delta_x1 = self.projection(delta_x1, radius, self.per_sample)
             # value = (x - x_1).norm()
 
-            if (delta_x - delta_x1).norm() < .000001:
+            if (delta_x - delta_x1).norm() < 10**(-4):
                 break
 
             #x.grad.zero_()  # reset the gradient for the next step

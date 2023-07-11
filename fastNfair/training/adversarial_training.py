@@ -1,7 +1,7 @@
 import torch
 from copy import deepcopy
 # from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
-from fastNfair.optimizers.trust_region_subproblem import TrustRegionSubproblem
+from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
 from fastNfair.optimizers.PGDhessquik import ProjectedGradientDescentv3
 from fastNfair.optimizers.rand_perturbation import RandomPerturbation
 
@@ -38,7 +38,7 @@ def predict_labels(out):
     return out.argmax(dim=-1)
 
 
-def train_one_epoch(fctn, optimizer, x, y, s, robustOptimizer = 'pgd', regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
+def train_one_epoch(fctn, optimizer, x, y, s, robustOptimizer = 'trust', regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
     fctn.train()
     n = x.shape[0]
     b = batch_size

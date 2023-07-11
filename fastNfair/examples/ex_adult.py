@@ -44,11 +44,11 @@ parser.add_argument('-s', '--save', action='store_true')
 args = parser.parse_args()
 
 
-# args.epochs = 10
-# args.verbose = True
-# args.robust = True
-# args.radius = 0.1
-# args.plot = True
+args.epochs = 10
+args.verbose = True
+args.robust = False
+args.radius = .3
+args.plot = True
 
 print(args)
 
@@ -99,7 +99,8 @@ trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size= 100)
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
                               verbose=args.verbose, robust=args.robust, radius=args.radius)
-
+print("Weights and biases of the network:")
+print(my_net.state_dict())
 
 #%% compute metrics
 evaluator = Evaluator()

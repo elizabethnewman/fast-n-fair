@@ -49,6 +49,7 @@ class ProjectedGradientDescentv3:
                 return x + delta_x
             delta_x1 = self.projection(delta_x1, radius, self.per_sample)
             # value = (x - x_1).norm()
+
             if (delta_x - delta_x1).norm() < 10**(-4):
                 # for i in range(len(dfc)):
                     # cosine = torch.dot(delta_x[i], dfc.squeeze(-1)[i]) / (delta_x[i].norm() * dfc.squeeze(-1)[i].norm())

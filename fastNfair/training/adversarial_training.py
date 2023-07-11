@@ -38,6 +38,7 @@ def predict_labels(out):
     return out.argmax(dim=-1)
 
 
+
 def train_one_epoch(fctn, optimizer, x, y, s, robustOptimizer='trust', regularizer=None, batch_size=32, robust=True, radius=2e-1, device='cpu'):
     fctn.train()
     n = x.shape[0]
@@ -69,7 +70,7 @@ def train_one_epoch(fctn, optimizer, x, y, s, robustOptimizer='trust', regulariz
                     opt = ProjectedGradientDescentv3(max_iter = 5000, per_sample = True)
                     xt = opt.solve(fctn_max, xb, 0.1, radius)
                 elif robustOptimizer == 'rand':
-                    opt = RandomPerturbation(per_sample = True)
+                    opt = RandomPerturbation(per_sample=True)
                     xt = opt.solve(xb, radius)
 
             optimizer.zero_grad()

@@ -55,8 +55,8 @@ class TrainerSGD:
         # main iteration
         for i in range(self.max_epochs):
             t0 = time.perf_counter()
-            loss_running, acc_running = train_one_epoch(fctn, self.optimizer, x_train, y_train, s_train,
-                                                        batch_size=self.batch_size, robustOptimizer = self.robustOptimizer,
+            loss_running, acc_running = train_one_epoch(fctn, self.optimizer, x_train, y_train, s_train, robustOptimizer=self.robustOptimizer,
+                                                        batch_size=self.batch_size,
                                                         robust=robust, radius=radius,
                                                         regularizer=self.regularizer, device=self.device)
             t1 = time.perf_counter()
@@ -103,6 +103,7 @@ if __name__ == "__main__":
 
     # for reproducibility
     torch.manual_seed(42)
+
 
     # generate data
     data_train = generate_unfair_data(200)

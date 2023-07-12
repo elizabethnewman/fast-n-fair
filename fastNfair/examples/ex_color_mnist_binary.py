@@ -20,22 +20,22 @@ parser = argparse.ArgumentParser(prog='FastNFairColorMNIST',
 parser.add_argument('--seed', default=42)
 
 # data
-parser.add_argument('--p_train', default=0.2, help='probability of color flipping')
-parser.add_argument('--p_val', default=0.1, help='probability of color flipping')
-parser.add_argument('--p_test', default=0.9, help='probability of color flipping')
+parser.add_argument('--p_train', default=0.2, type=float, help='probability of color flipping')
+parser.add_argument('--p_val', default=0.1, type=float, help='probability of color flipping')
+parser.add_argument('--p_test', default=0.9, type=float, help='probability of color flipping')
 
-parser.add_argument('--alpha', default=1e-1, help='regularization parameter')
-parser.add_argument('--n-train', default=200, help='number of training points')
-parser.add_argument('--n-val', default=50, help='number of training points')
-parser.add_argument('--n-test', default=50, help='number of training points')
+parser.add_argument('--alpha', default=1e-1, type=float, help='regularization parameter')
+parser.add_argument('--n-train', default=200, type=int, help='number of training points')
+parser.add_argument('--n-val', default=50, type=int, help='number of training points')
+parser.add_argument('--n-test', default=50, type=int, help='number of training points')
 
 # training
-parser.add_argument('--epochs', default=10)
-parser.add_argument('--batch', default=5)
-parser.add_argument('-lr', '--lr', default=1e-3)
+parser.add_argument('--epochs', default=10, type=int)
+parser.add_argument('--batch', default=5, type=int)
+parser.add_argument('-lr', '--lr', default=1e-3, type=float)
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--robust', action='store_true')
-parser.add_argument('--radius', default=1e1)
+parser.add_argument('--radius', default=1e1, type=float)
 
 
 # general

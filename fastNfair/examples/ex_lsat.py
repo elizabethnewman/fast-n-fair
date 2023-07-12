@@ -220,10 +220,6 @@ if args.save:
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
 
-    with open(dir_name + filename + '.txt', 'w') as f:
-        f.write(str(results_train) + "\n")
-        f.write(str(args) + "\n")
-        f.write(str(results_eval))
 
 
 

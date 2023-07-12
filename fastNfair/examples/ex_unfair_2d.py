@@ -43,14 +43,6 @@ parser.add_argument('-s', '--save', action='store_true')
 args = parser.parse_args()
 
 
-args.epochs = 10
-args.verbose = True
-args.robust = True
-args.radius = .15
-args.plot = True
-print(args)
-
-
 
 #%% generate data
 
@@ -163,6 +155,8 @@ if args.save:
     print(filename)
 
     with open(dir_name + filename + '.pkl', 'wb') as f:
+        print('Saving as...')
+        print(dir_name + filename)
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
 

@@ -44,8 +44,8 @@ parser.add_argument('-s', '--save', action='store_true')
 args = parser.parse_args()
 
 
-args.epochs = 10
-args.verbose = True
+#args.epochs = 10
+#args.verbose = True
 #args.robust = False
 #args.radius = .3
 #args.plot = True

@@ -1,1 +1,0 @@
-Namespace(seed=42, p1=0.5, p2=0.5, alpha=0.1, u=(1.0, 1.0), n_train=200, n_val=50, n_test=50, epochs=10, lr=0.01, verbose=True, robust=True, radius=0.15, robustOptimizer='trust', plot=True, save=True)

@@ -31,20 +31,19 @@ parser.add_argument('--epochs', default=10)
 parser.add_argument('-lr', '--lr', default=1e-2)
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--robust', action='store_true')
-parser.add_argument('--radius', default=2e-1, type = float)
-parser.add_argument('--robustOptimizer', default='trust', type=str)
+parser.add_argument('--radius', default=2e-1)
 
 # general
 parser.add_argument('-p', '--plot', action='store_true')
-parser.add_argument('-s', '--save', action='store_true')
+
 # parse
 args = parser.parse_args()
 
 
 args.epochs = 10
 args.verbose = True
-args.robust = True
-args.radius = 0.15
+args.robust = False
+args.radius = 1e1
 args.plot = True
 
 print(args)
@@ -121,8 +120,7 @@ trainer = TrainerSGD(opt, max_epochs=args.epochs)
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
                               verbose=args.verbose, robust=args.robust, radius=args.radius)
-print("Weights and biases of the network:")
-print(my_net.state_dict())
+
 
 #%% compute metrics
 evaluator = Evaluator()
@@ -139,8 +137,6 @@ if args.plot:
     metrics.ConfusionMatrixDisplay(np.array(cm).reshape(2, -1)).plot()
     plt.show()
 
-    plt.figure()
-
     for j in ('full', 's = 0', 's = 1'):
         fpr, tpr, auc = itemgetter(*('fpr', 'tpr', 'auc'))(results_eval['train'][j])
         plt.plot(fpr, tpr, label=j + ': AUC = %0.4f' % auc)
@@ -152,8 +148,6 @@ if args.plot:
     plt.legend()
     plt.show()
 
-    plt.figure()
-
 #%%
 from pprint import pprint
 pprint(results_eval['train']['fairness'])
@@ -164,36 +158,3 @@ from fastNfair.data.lsat import visualize_lsat_data
 
 visualize_lsat_data((x_train, y_train, s_train), my_net)
 plt.show()
-
-plt.figure()
-
-#%% saving results
-if args.save:
-    import pickle
-    import os
-    dir_name = 'lsat_results/'
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
-
-    # make filenmae
-    filename = ''
-
-    if args.robust:
-        filename += 'robust' + '--' + args.robustOptimizer + ('--r_%0.2e' % args.radius)
-    else:
-        filename += 'nonrobust'
-
-    print('Saving as...')
-    print(filename)
-
-    with open(dir_name + filename + '.pkl', 'wb') as f:
-        results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
-        pickle.dump(results, f)
-
-
-
-
-
-
-
-

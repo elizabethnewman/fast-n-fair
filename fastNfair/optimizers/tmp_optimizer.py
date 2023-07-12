@@ -98,7 +98,8 @@ class TrustRegionSubproblem:
 
         # update
         xt = x + p.reshape(x.shape)
-
+        # print(p.reshape(x.shape))
+        # print(fctn.fctn.net[0].K)
         return xt, {'s': s.clone(), 'delta': delta}
 
 

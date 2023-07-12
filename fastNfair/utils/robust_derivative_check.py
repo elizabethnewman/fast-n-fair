@@ -9,14 +9,14 @@ from fastNfair.optimizers.tmp_optimizer import TrustRegionSubproblem
 from fastNfair.optimizers.PGDhessquik import ProjectedGradientDescentv3
 from fastNfair.training.adversarial_training import ObjectiveFunctionMaximize
 
-def solve_inner_problem(type, fctn, x,y,radius):
+def solve_inner_problem(sol_type, fctn, x,y,radius):
     # evaluate inner problem
     with torch.no_grad():
-        if type == 'PGD':
+        if sol_type == 'PGD':
             opt = ProjectedGradientDescentv3(max_iter=1)
             fctn_max = ObjectiveFunctionMaximize(fctn, y)
             xt = opt.solve(fctn_max, x, 1, radius)
-        elif type == 'TRS':
+        elif sol_type == 'TRS':
             opt = TrustRegionSubproblem(max_iter=10000, per_sample=True)
             fctn_max = ObjectiveFunctionMaximize(fctn, y)
             xt, info = opt.solve(fctn_max, x, radius)
@@ -25,13 +25,13 @@ def solve_inner_problem(type, fctn, x,y,radius):
     loss, _, _, info = fctn(xt,y)
     return loss
 
-def robust_network_derivative_check(fctn, x, y, radius=1e-2,
+def robust_network_derivative_check(fctn, x, y, sol_type='TRS', radius=1e-2,
                                     num_test: int = 15, base: float = 2.0, tol: float = 0.1,
                                     verbose: bool = False) -> Optional[bool]:
     fctn.zero_grad()
 
     # initial solution of inner optimization problem
-    loss = solve_inner_problem('PGD',fctn,x,y,radius)
+    loss = solve_inner_problem(sol_type,fctn,x,y,radius)
     loss.backward()
 
     # extract initial values
@@ -62,7 +62,7 @@ def robust_network_derivative_check(fctn, x, y, radius=1e-2,
         insert_data(fctn, theta0 + h * dtheta)
 
         # solve inner optimization problem for perturbation
-        losst = solve_inner_problem('PGD',fctn,x,y,radius)
+        losst = solve_inner_problem(sol_type,fctn,x,y,radius)
 
         # compute 0th and 1st order errors
         E0.append(torch.norm(loss0 - losst.detach()).item())
@@ -150,8 +150,10 @@ if __name__ == "__main__":
     fctn = ObjectiveFunctionMSE(my_net)
     theta0 = extract_data(fctn, 'data')
 
-    robust_network_derivative_check(fctn, x, y, verbose=True, radius=1e3)
+    # sol_type: 'PDG' for projected gradient descent method, 'TRS' for trust region
+    # (default is 'TRS' if left unspecified)
+    robust_network_derivative_check(fctn, x, y, sol_type='PGD', verbose=True, radius=1e3)
 
     insert_data(fctn, theta0)
-    robust_network_derivative_check(fctn, x, y, verbose=True, radius=1e-1)
+    robust_network_derivative_check(fctn, x, y, sol_type='PGD', verbose=True, radius=1e-1)
 

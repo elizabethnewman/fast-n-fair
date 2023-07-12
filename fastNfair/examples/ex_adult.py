@@ -27,11 +27,11 @@ parser.add_argument('--n-val', default=2000, help='number of training points')
 parser.add_argument('--n-test', default=1000, help='number of training points')
 
 # training
-parser.add_argument('--epochs', default=10)
-parser.add_argument('-lr', '--lr', default=1e-2)
+parser.add_argument('--epochs', default=10, type=int)
+parser.add_argument('-lr', '--lr', default=1e-2, type=float)
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-r', '--robust', action='store_true')
-parser.add_argument('--radius', default=2e-1, type = float)
+parser.add_argument('--radius', default=2e-1, type=float)
 parser.add_argument('--robustOptimizer', default='trust', type=str)
 
 # general
@@ -46,9 +46,9 @@ args = parser.parse_args()
 
 args.epochs = 10
 args.verbose = True
-args.robust = False
-args.radius = .3
-args.plot = True
+#args.robust = False
+#args.radius = .3
+#args.plot = True
 
 print(args)
 
@@ -94,7 +94,7 @@ fctn = ObjectiveFunctionLogisticRegression(my_net)
 opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
-trainer = TrainerSGD(opt, max_epochs=args.epochs, batch_size= 100)
+trainer = TrainerSGD(opt, robustOptimizer=args.robustOptimizer, max_epochs=args.epochs, batch_size= 100)
 
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
@@ -133,8 +133,10 @@ if args.plot:
     plt.figure()
 
 #%%
-from pprint import pprint
-pprint(results_eval['train']['fairness'])
+if args.verbose:
+    from pprint import pprint
+    pprint(results_eval['train']['fairness'])
+
 
 #%% saving results
 if args.save:
@@ -158,6 +160,7 @@ if args.save:
     with open(dir_name + filename + '.pkl', 'wb') as f:
         results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
         pickle.dump(results, f)
+
 
 
 

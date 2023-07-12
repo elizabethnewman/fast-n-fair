@@ -36,7 +36,10 @@ parser.add_argument('--robustOptimizer', default='trust', type=str)
 
 # general
 parser.add_argument('-p', '--plot', action='store_true')
+
+# save
 parser.add_argument('-s', '--save', action='store_true')
+
 # parse
 args = parser.parse_args()
 
@@ -116,7 +119,7 @@ fctn = ObjectiveFunctionLogisticRegression(my_net)
 opt = torch.optim.Adam(fctn.parameters(), lr=args.lr)
 
 # construct trainer
-trainer = TrainerSGD(opt, max_epochs=args.epochs)
+trainer = TrainerSGD(opt, robustOptimizer=args.robustOptimizer, max_epochs=args.epochs)
 
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
@@ -192,6 +195,30 @@ if args.save:
 
 
 
+
+#%% saving results
+if args.save:
+    import pickle
+    import os
+    from pprint import pprint
+    dir_name = 'lsat_results/'
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+
+    # make filenmae
+    filename = ''
+
+    if args.robust:
+        filename += 'robust' + '--' + args.robustOptimizer + ('--r_%0.2e' % args.radius)
+    else:
+        filename += 'nonrobust'
+
+    print('Saving as...')
+    print(filename)
+
+    with open(dir_name + filename + '.pkl', 'wb') as f:
+        results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
+        pickle.dump(results, f)
 
 
 

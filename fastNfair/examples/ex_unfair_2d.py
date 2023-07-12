@@ -42,7 +42,6 @@ parser.add_argument('-s', '--save', action='store_true')
 # parse
 args = parser.parse_args()
 
-print(args)
 
 
 #%% generate data
@@ -139,6 +138,7 @@ if args.verbose:
 if args.save:
     import pickle
     import os
+    from pprint import pprint
     dir_name = 'unfair_2d_results/'
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)

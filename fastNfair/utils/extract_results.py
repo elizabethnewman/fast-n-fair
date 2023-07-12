@@ -77,3 +77,7 @@ if __name__ == "__main__":
     out4, rows, columns = concanenate_results(['nonrobust', 'nonrobust'], dir_name='../examples/unfair_2d_results/',
                                               main_key='history', data_key='train')
 
+    out5, rows, columns = concanenate_results(['nonrobust', 'nonrobust'], dir_name='../examples/unfair_2d_results/',
+                                              main_key='fairness', data_key='val')
+
+    out5[:, :, columns.index('y = 0 (s0 - s1)')]

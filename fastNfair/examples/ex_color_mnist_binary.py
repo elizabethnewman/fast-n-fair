@@ -41,18 +41,16 @@ parser.add_argument('--radius', default=1e1)
 # general
 parser.add_argument('-p', '--plot', action='store_true')
 
+# save
+parser.add_argument('-s', '--save', action='store_true')
 # parse
 args = parser.parse_args()
 
-
-args.epochs = 10
-args.verbose = True
-args.robust = False
-args.plot = True
-args.alpha = 0e0
-
-
-
+# args.epochs = 10
+# args.alpha = 0e0
+# args.verbose = True
+# args.robust = False
+# args.plot = True
 
 #%% generate data
 
@@ -151,6 +149,34 @@ if args.plot:
     plt.legend()
     plt.show()
 
+if args.save:
+    import pickle
+    import os
+    dir_name = 'mnist_binary_results/'
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+
+    # make file
+    filename = ''
+
+    # record robust
+    if args.robust:
+        filename += 'robust'
+    else:
+        filename += 'nonrobust'
+
+    # record alpha
+    filename += '--alpha' + '-' + str(round(args.alpha, 2))
+
+    # record correlations (p values)
+    filename += '--p_(train-val-test)' + '-(' + str(round(args.p_train,2)) + '-' + str(round(args.p_val,2)) + '-' + str(round(args.p_test,2)) + ')'
+
+    print('Saving as...')
+    print(filename)
+
+    with open(dir_name + filename + '.pkl', 'wb') as f:
+        results = {'results_train': results_train, 'results_eval': results_eval, 'args': args}
+        pickle.dump(results, f)
 
 
 

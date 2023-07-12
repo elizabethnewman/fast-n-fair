@@ -86,7 +86,7 @@ trainer = TrainerSGD(opt, robustOptimizer=args.robustOptimizer, max_epochs=args.
 # train!
 results_train = trainer.train(fctn, (x_train, y_train, s_train), (x_val, y_val, s_val), (x_test, y_test, s_test),
                               verbose=args.verbose, robust=args.robust, radius=args.radius)
-print([row[1] for row in results_train['history']['values'][1:]])
+
 
 
 #%% compute metrics
